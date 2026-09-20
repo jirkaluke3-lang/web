@@ -108,6 +108,8 @@ def load_backgrounds():
         if r.get("aktivni") and not truthy(r["aktivni"]): continue
         f = (r.get("soubor") or "").strip()
         if not f: continue
+        if not f.startswith("http") and not (IMG / f).exists():
+            continue  # soubor ještě nenahrán -> přeskoč (vstup ukáže tmavé pozadí)
         out.append({"file": f, "cap": (r.get("titulek_cz") or "").strip(),
                     "video": f.lower().endswith(VIDEO_EXT)})
     return out
@@ -222,11 +224,8 @@ def write(path_parts, content):
 def page_vstup(cfg, backs):
     name = cfg.get("nazev_atelieru", "IN—FORM—ARCHITEKTI")
     intro = cfg.get("uvodni_text", "")
-    data = [{"src": (f'obrazky/pozadi/{b["file"]}' if not b["file"].startswith("http") else b["file"]),
+    data = [{"src": (b["file"] if b["file"].startswith("http") else f'obrazky/{b["file"]}'),
              "cap": b["cap"], "video": b["video"]} for b in backs]
-    # placeholder, nejsou-li pozadí
-    if not data:
-        data = [{"src": None, "cap": "", "video": False}]
     parts = name.split("—")
     brand = ("IN<span class=\"dash\">—</span>FORM<span class=\"dash2\">—</span>ARCHITEKTI"
              if len(parts) == 3 else e(name))
@@ -241,12 +240,13 @@ def page_vstup(cfg, backs):
 </section>
 <script>
 const B={json.dumps(data, ensure_ascii=False)};
-const p=B[Math.floor(Math.random()*B.length)];
 const bg=document.getElementById('bg');
-if(p.src && p.video){{bg.innerHTML='<video class="media" src="'+p.src+'" autoplay muted loop playsinline></video>';}}
-else if(p.src){{bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';}}
-else{{bg.style.background='linear-gradient(160deg,#3d3d3d,#141414)';bg.innerHTML='<div class="ph-label">POZADÍ<br>(list POZADÍ + složka obrazky/pozadi)</div>';}}
-document.getElementById('cap').textContent=p.cap||'';
+const p=B.length?B[Math.floor(Math.random()*B.length)]:null;
+function fallback(){{bg.style.background='linear-gradient(160deg,#3d3d3d,#141414)';}}
+fallback();
+if(p && p.video){{const v=document.createElement('video');v.className='media';v.src=p.src;v.autoplay=v.muted=v.loop=v.playsInline=true;v.onerror=fallback;bg.appendChild(v);}}
+else if(p && p.src){{const im=new Image();im.onload=function(){{bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';}};im.onerror=fallback;im.src=p.src;}}
+document.getElementById('cap').textContent=(p&&p.cap)||'';
 </script>""" + FOOT
 
 def page_rozcestnik(cfg):
@@ -279,7 +279,7 @@ def page_projekty(cfg, projekty):
     medailon = cfg.get("medailon", "")
     cards = "".join(card(p, "../", "projekty") for p in projekty)
     med = f"""<div class="medailon">
-      {ph("Ateliér","r34", None, ("../"+ 'obrazky/'+cfg['medailon_foto']) if cfg.get('medailon_foto') else None, "")}
+      {ph("Ateliér","r34", None, ("../obrazky/"+cfg['medailon_foto']) if (cfg.get('medailon_foto') and (IMG/cfg['medailon_foto']).exists()) else None, "")}
       <div class="txt"><h2 class="h-page display">Ateliér</h2><p class="body-t">{e(medailon)}</p></div>
     </div>""" if medailon else ""
     body = f"""{bar("projekty",1)}
