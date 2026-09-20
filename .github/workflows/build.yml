@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
 permissions:
   contents: read
   pages: write
@@ -17,7 +19,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: python generator/build.py
+      - name: Načíst obsah z Googlu (tabulka + Disk)
+        env:
+          GSHEET_ID:      ${{ secrets.GSHEET_ID }}
+          GDRIVE_ROOT_ID: ${{ secrets.GDRIVE_ROOT_ID }}
+          GDRIVE_API_KEY: ${{ secrets.GDRIVE_API_KEY }}
+        run: python generator/fetch_sheet_drive.py
+      - name: Sestavit web
+        env:
+          USE_CNAME: ${{ vars.USE_CNAME }}
+        run: python generator/build.py
       - uses: actions/upload-pages-artifact@v3
         with: { path: site }
   deploy:
