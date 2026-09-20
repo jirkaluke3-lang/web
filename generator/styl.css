@@ -5,8 +5,8 @@ body{background:var(--white);color:var(--black);-webkit-font-smoothing:antialias
 .display{font-weight:600;letter-spacing:-.018em}
 .meta{font-weight:500;font-size:12px;letter-spacing:.075em;text-transform:uppercase}
 .body-t{font-size:clamp(15px,1.25vw,17px);line-height:1.55;font-weight:400;max-width:62ch}
-.screen{display:none;min-height:100vh}
-.screen.on{display:block}
+.screen{min-height:100vh}
+
 
 /* ÚROVEŇ 0 */
 #vstup{position:relative;height:100vh;overflow:hidden;cursor:pointer;color:#fff;background:#141414}
@@ -25,8 +25,8 @@ body{background:var(--white);color:var(--black);-webkit-font-smoothing:antialias
 #vstup:hover .enter span{transform:translateX(8px)}
 
 /* ÚROVEŇ 1 */
-#rozcestnik{display:none;height:100vh;padding:var(--pad);flex-direction:column;justify-content:space-between}
-#rozcestnik.on{display:flex}
+#rozcestnik{display:flex;height:100vh;padding:var(--pad);flex-direction:column;justify-content:space-between}
+
 #rozcestnik .brand-s{font-size:clamp(16px,1.6vw,20px);color:inherit;text-decoration:none}
 #rozcestnik nav{display:flex;flex-direction:column;gap:clamp(4px,1vh,14px)}
 #rozcestnik nav a{color:inherit;text-decoration:none;font-size:clamp(42px,9vw,120px);line-height:1.04;width:max-content;max-width:100%}
