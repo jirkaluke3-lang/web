@@ -1,0 +1,14 @@
+klic,hodnota_cz,poznamka
+nazev_atelieru,IN—FORM—ARCHITEKTI,Zobrazuje se na vstupu a v liště.
+uvodni_text,,Krátký text na vstupní stránce (volitelný).
+medailon,"Jsme mladý pražský ateliér. Navrhujeme domy, interiéry a veřejný prostor — od studie po realizaci. Věříme v úsporné prostředky, čitelnou konstrukci a řemeslo.",Úvodní blok stránky PROJEKTY. Mění se výjimečně.
+medailon_foto,nastaveni/atelier.jpg,Fotografie k medailonu.
+onas_text,,Plný text stránky O NÁS — doplníte vlastní.
+kontakt_adresa,"IN—FORM—ARCHITEKTI
+ulice 00
+000 00 Praha",Formát dle vzoru Diener & Diener.
+kontakt_email,studio@informarchitekti.cz,
+kontakt_telefon,+420 000 000 000,
+kontakt_ic,IČ 00000000,
+jobs_text,V tuto chvíli nenabíráme. Portfolia rádi uvidíme na studio@informarchitekti.cz.,Stránku JOBS držte vždy živou.
+instagram,https://instagram.com/…,Odkaz v patičce / kontaktu.
