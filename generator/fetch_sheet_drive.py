@@ -100,17 +100,31 @@ def pull_drive():
         for proj in drive_list(sections[sec]):
             if not is_folder(proj): continue
             slug = proj["name"].strip()
-            for f in drive_list(proj["id"]):
-                if is_folder(f) or not is_wanted(f["name"]): continue
-                drive_download(f["id"], IMG / sec / slug / f["name"])
-            print(f"· Disk {sec}/{slug} stažen")
+            got, skipped = 0, []
+            for fl in drive_list(proj["id"]):
+                if is_folder(fl): continue
+                if not is_wanted(fl["name"]):
+                    skipped.append(fl["name"]); continue
+                drive_download(fl["id"], IMG / sec / slug / fl["name"])
+                got += 1
+            msg = f"· Disk {sec}/{slug}: staženo {got} souborů"
+            if skipped:
+                msg += f" | PŘESKOČENO (nepodporovaný formát, převeďte na JPG): {', '.join(skipped)}"
+            print(msg)
 
     for sec in SECTION_FLAT:
         if sec not in sections: continue
-        for f in drive_list(sections[sec]):
-            if is_folder(f) or not is_wanted(f["name"]): continue
-            drive_download(f["id"], IMG / sec / f["name"])
-        print(f"· Disk {sec}/ stažen")
+        got, skipped = 0, []
+        for fl in drive_list(sections[sec]):
+            if is_folder(fl): continue
+            if not is_wanted(fl["name"]):
+                skipped.append(fl["name"]); continue
+            drive_download(fl["id"], IMG / sec / fl["name"])
+            got += 1
+        msg = f"· Disk {sec}/: staženo {got} souborů"
+        if skipped:
+            msg += f" | PŘESKOČENO (nepodporovaný formát, převeďte na JPG): {', '.join(skipped)}"
+        print(msg)
 
 
 if __name__ == "__main__":
