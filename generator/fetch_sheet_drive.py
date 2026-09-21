@@ -34,7 +34,7 @@ SECTION_WITH_SLUGS = ["projekty", "inkubator"]
 # podsložky na Disku s obrazy přímo uvnitř
 SECTION_FLAT = ["pozadi", "nastaveni"]
 
-IMG_EXT = (".jpg", ".jpeg", ".png", ".webp", ".avif", ".mp4", ".webm", ".gif", ".txt")
+IMG_EXT = (".jpg", ".jpeg", ".jfif", ".png", ".webp", ".avif", ".mp4", ".webm", ".gif", ".txt")
 
 
 def fetch(url, binary=False):
