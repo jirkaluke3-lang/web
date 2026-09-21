@@ -30,8 +30,15 @@ def read_csv(name):
     path = DATA / f"{name}.csv"
     if not path.exists():
         return []
-    with open(path, encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+    with open(path, encoding="utf-8-sig") as f:   # utf-8-sig = odstraní BOM z Googlu
+        rows = list(csv.DictReader(f))
+    # normalizace klíčů: ořez mezer a BOM, sjednocení
+    clean = []
+    for r in rows:
+        clean.append({(k or "").strip().lstrip("\ufeff"): (v if v is not None else "")
+                      for k, v in r.items()})
+    print(f"  [data] {name}.csv: {len(clean)} řádků, sloupce: {list(clean[0].keys()) if clean else '—'}")
+    return clean
 
 def truthy(v):
     return str(v).strip().upper() in ("ANO", "YES", "1", "TRUE", "X")
@@ -47,7 +54,7 @@ def load_projects(csvname, folder):
             "slug": slug,
             "nazev": (r.get("nazev_cz") or "").strip(),
             "lokalita": (r.get("lokalita") or "").strip(),
-            "rok": (r.get("rok") or "").strip(),
+            "rok": (r.get("rok") or "").strip().replace(".0",""),
             "typ": (r.get("typ") or "").strip(),
             "faze": (r.get("faze") or "").strip(),
             "charakter": (r.get("charakter") or "").strip(),
@@ -102,16 +109,21 @@ def load_settings():
             for r in read_csv("nastaveni") if r.get("klic")}
 
 def load_backgrounds():
-    rows = read_csv("pozadi")
-    out = []
-    for r in rows:
-        if r.get("aktivni") and not truthy(r["aktivni"]): continue
+    # titulky z listu POZADI, klíčované názvem souboru (volitelné)
+    caps = {}
+    for r in read_csv("pozadi"):
         f = (r.get("soubor") or "").strip()
-        if not f: continue
-        if not f.startswith("http") and not (IMG / f).exists():
-            continue  # soubor ještě nenahrán -> přeskoč (vstup ukáže tmavé pozadí)
-        out.append({"file": f, "cap": (r.get("titulek_cz") or "").strip(),
-                    "video": f.lower().endswith(VIDEO_EXT)})
+        if f:
+            caps[os.path.basename(f)] = (r.get("titulek_cz") or "").strip()
+    # pozadí = vše, co je fyzicky ve složce obrazky/pozadi
+    d = IMG / "pozadi"
+    out = []
+    if d.exists():
+        for fn in sorted(os.listdir(d)):
+            if fn.lower().endswith(IMG_EXT):
+                out.append({"file": f"pozadi/{fn}", "cap": caps.get(fn, ""),
+                            "video": fn.lower().endswith(VIDEO_EXT)})
+    print(f"  [pozadi] {len(out)} souborů použito jako pozadí")
     return out
 
 # ---------------------------------------------------------------------------
