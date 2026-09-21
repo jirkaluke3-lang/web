@@ -166,6 +166,7 @@ def head(title, desc, canonical, depth, jsonld=None):
 <meta property="og:description" content="{e(desc)}">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#0a0a0a">
+<link rel="icon" type="image/svg+xml" href="{root}favicon.svg">
 <link rel="preload" as="font" type="font/woff" href="{root}fonty/Ciutadella-Regular.woff" crossorigin>
 <link rel="stylesheet" href="{root}fonty/fonty.css">
 <style>{CSS}</style>{ld}
@@ -448,8 +449,12 @@ def main():
     write(["sitemap.xml"], sitemap(projekty, inkubator))
     write(["robots.txt"], f"User-agent: *\nAllow: /\nSitemap: {DOMENA}/sitemap.xml\n")
     (OUT / ".nojekyll").write_text("")
-    if os.environ.get("USE_CNAME") == "1":
-        (OUT / "CNAME").write_text("informarchitekti.cz\n")
+    # favicon: signálně žlutý čtverec (barvu lze změnit níže)
+    (OUT / "favicon.svg").write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+        '<rect width="32" height="32" fill="#FFD400"/></svg>')
+    # vlastní doména
+    (OUT / "CNAME").write_text("informarchitekti.cz\n")
 
     print(f"Hotovo: {len(projekty)} projektů, {len(inkubator)} inkubátor. Web ve složce site/.")
 
