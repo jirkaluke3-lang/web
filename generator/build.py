@@ -104,6 +104,24 @@ def parse_popisky(path):
                 weaves[num] = " ".join(body[1:])
     return captions, weaves
 
+def load_news(rows):
+    """Inkubátor v novinkové podobě (datum/stitek/titulek/text/obraz/projekt_slug)."""
+    out = []
+    for r in rows:
+        if r.get("publikovat") and not truthy(r["publikovat"]): continue
+        tit = (r.get("titulek_cz") or "").strip()
+        if not tit and not (r.get("text_cz") or "").strip(): continue
+        out.append({
+            "datum": (r.get("datum") or "").strip(),
+            "stitek": (r.get("stitek") or "").strip(),
+            "titulek": tit,
+            "text": (r.get("text_cz") or "").strip(),
+            "obraz": (r.get("obraz") or "").strip(),
+            "projekt": (r.get("projekt_slug") or "").strip(),
+        })
+    return out
+
+
 def load_settings():
     return {r["klic"]: (r.get("hodnota_cz") or "").strip()
             for r in read_csv("nastaveni") if r.get("klic")}
@@ -159,15 +177,12 @@ FOOT = "\n</body>\n</html>\n"
 def bar(active, depth):
     root = "../" * depth
     items = [("projekty","PROJEKTY","projekty/"),
-             ("onas","O NÁS","onas/"),
-             ("inkubator","INKUBÁTOR","inkubator/"),
-             ("kontakt","KONTAKT","kontakt/"),
-             ("jobs","JOBS","jobs/")]
+             ("kontakt","KONTAKT","kontakt/")]
     links = "".join(
         f'<a href="{root}{href}" class="{"act" if k==active else ""}">{lbl}</a>'
         for k,lbl,href in items)
     return f"""<header class="bar meta">
-  <a class="home display" href="{root}rozcestnik/">IN—FORM—ARCHITEKTI</a>
+  <a class="home display" href="{root}">IN—FORM—ARCHITEKTI</a>
   <nav>{links}</nav>
 </header>"""
 
@@ -238,27 +253,34 @@ def page_vstup(cfg, backs):
     intro = cfg.get("uvodni_text", "")
     data = [{"src": (b["file"] if b["file"].startswith("http") else urllib.parse.quote(f'obrazky/{b["file"]}', safe="/")),
              "cap": b["cap"], "video": b["video"]} for b in backs]
-    parts = name.split("—")
-    brand = ("IN<span class=\"dash\">—</span>FORM<span class=\"dash2\">—</span>ARCHITEKTI"
+    parts = name.split("\u2014")
+    brand = ('IN<span class="dash">\u2014</span>FORM<span class="dash2">\u2014</span>ARCHITEKTI'
              if len(parts) == 3 else e(name))
     intro_html = f'<p class="intro body-t">{e(intro)}</p>' if intro else ""
     return head(name, cfg.get("medailon","")[:155], DOMENA+"/", 0) + f"""
-<section id="vstup" onclick="location.href='rozcestnik/'" title="Vstoupit">
+<section id="vstup" title="Klikněte pro další obraz">
   <div class="bg" id="bg"></div>
-  <h1 class="brand display">{brand}</h1>
+  <a class="brand display" href="projekty/" id="brandLink">{brand}</a>
   {intro_html}
   <p class="caption meta" id="cap"></p>
-  <p class="enter meta">vstoupit <span>→</span></p>
 </section>
 <script>
 const B={json.dumps(data, ensure_ascii=False)};
-const bg=document.getElementById('bg');
-const p=B.length?B[Math.floor(Math.random()*B.length)]:null;
-function fallback(){{bg.style.background='linear-gradient(160deg,#3d3d3d,#141414)';}}
-fallback();
-if(p && p.video){{const v=document.createElement('video');v.className='media';v.src=p.src;v.autoplay=v.muted=v.loop=v.playsInline=true;v.onerror=fallback;bg.appendChild(v);}}
-else if(p && p.src){{const im=new Image();im.onload=function(){{bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';}};im.onerror=fallback;im.src=p.src;}}
-document.getElementById('cap').textContent=(p&&p.cap)||'';
+let i = B.length ? Math.floor(Math.random()*B.length) : -1;
+const bg=document.getElementById('bg'), cap=document.getElementById('cap');
+function fallback(){{bg.style.backgroundImage='';bg.style.background='linear-gradient(160deg,#3d3d3d,#141414)';bg.innerHTML='';}}
+function show(){{
+  if(i<0){{fallback();cap.textContent='';return;}}
+  const p=B[i];
+  if(p.video){{bg.style.background='#141414';bg.innerHTML='';var v=document.createElement('video');v.className='media';v.src=p.src;v.autoplay=v.muted=v.loop=v.playsInline=true;v.onerror=fallback;bg.appendChild(v);}}
+  else{{fallback();var im=new Image();im.onload=function(){{bg.innerHTML='';bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';}};im.onerror=fallback;im.src=p.src;}}
+  cap.textContent=p.cap||'';
+}}
+show();
+document.getElementById('vstup').addEventListener('click',function(ev){{
+  if(ev.target.closest('#brandLink')) return;
+  if(B.length>1){{ i=(i+1)%B.length; show(); }}
+}});
 </script>""" + FOOT
 
 def page_rozcestnik(cfg):
@@ -276,7 +298,7 @@ def page_rozcestnik(cfg):
 def card(p, root, base):
     ratio = "r43"
     im = p["images"]["files"][0]
-    src = f'{root}obrazky/{p["_folder"]}/{p["slozka"]}/{im["file"]}' if im["file"] else None
+    src = f'obrazky/{p["_folder"]}/{p["slozka"]}/{im["file"]}' if im["file"] else None
     tag = " · ".join(x for x in (p["typ"], p["faze"], p["charakter"]) if x)
     loc = " · ".join(x for x in (p["lokalita"], p["rok"]) if x)
     return f"""<a class="card" href="{root}{base}/{e(p['slug'])}/">
@@ -325,14 +347,31 @@ def page_stream(item, projekty, inkubator, group):
     canon = f'{DOMENA}/{"inkubator" if group=="i" else "projekty"}/{item["slug"]}/'
     return head(title, desc, canon, 2, jsonld_project(item)) + body + FOOT
 
-def page_inkubator(cfg, inkubator):
-    cards = "".join(card(p, "../", "inkubator") for p in inkubator)
+def news_feed_html(items, root):
+    arts = []
+    for n in items:
+        has_img = n["obraz"] and (IMG / n["obraz"]).exists()
+        img = ph(n["titulek"], "r43", None, (n["obraz"] if has_img else None), root)
+        tag = f'<p class="tag meta" style="margin-top:14px">{e(n["stitek"])}</p>' if n["stitek"] else ""
+        date = f'<p class="date meta">{e(n["datum"])}</p>' if n["datum"] else ""
+        link = (f'<p style="margin-top:10px"><a class="body-t" href="{root}projekty/{e(n["projekt"])}/">Projekt →</a></p>'
+                if n["projekt"] else "")
+        arts.append(f'<article>{img}{tag}<h3 class="display">{e(n["titulek"])}</h3>{date}'
+                    f'<p class="body-t">{e(n["text"])}</p>{link}</article>')
+    return '<div class="news">' + "".join(arts) + '</div>'
+
+
+def page_inkubator(cfg, inkubator, inkubator_news):
     intro = '<p class="body-t intro-block">Rozpracované, experimentální a výzkumné práce ateliéru — prototypy, materiálové zkoušky, soutěžní návrhy.</p>'
+    if inkubator:                       # projektová podoba listu
+        inner = '<div class="grid">' + "".join(card(p, "../", "inkubator") for p in inkubator) + '</div>'
+    else:                               # novinková podoba listu
+        inner = news_feed_html(inkubator_news, "../")
     body = f"""{bar("inkubator",1)}
 <div class="page">
   <h2 class="h-page display">Inkubátor</h2>
   {intro}
-  <div class="grid">{cards}</div>
+  {inner}
 </div>"""
     return head("Inkubátor — IN—FORM—ARCHITEKTI",
                 "Rozpracované a experimentální práce ateliéru IN—FORM—ARCHITEKTI.",
@@ -360,7 +399,7 @@ def page_kontakt(cfg):
                 DOMENA+"/kontakt/", 1) + body + FOOT
 
 def sitemap(projekty, inkubator):
-    urls = ["/", "/rozcestnik/", "/projekty/", "/inkubator/", "/onas/", "/kontakt/", "/jobs/"]
+    urls = ["/", "/projekty/", "/inkubator/", "/onas/", "/kontakt/", "/jobs/"]
     urls += [f"/projekty/{p['slug']}/" for p in projekty]
     urls += [f"/inkubator/{p['slug']}/" for p in inkubator]
     body = "".join(f"<url><loc>{DOMENA}{u}</loc></url>" for u in urls)
@@ -375,15 +414,24 @@ def main():
 
     cfg = load_settings()
     projekty = load_projects("projekty", "projekty")
-    inkubator = load_projects("inkubator", "inkubator")
     for p in projekty:  p["_folder"] = "projekty"
-    for p in inkubator: p["_folder"] = "inkubator"
+
+    ink_rows = read_csv("inkubator")
+    ink_project_mode = bool(ink_rows) and ("slug" in ink_rows[0])
+    if ink_project_mode:
+        inkubator = load_projects("inkubator", "inkubator")
+        for p in inkubator: p["_folder"] = "inkubator"
+        inkubator_news = []
+        print(f"  [inkubator] projektový režim: {len(inkubator)} položek")
+    else:
+        inkubator = []
+        inkubator_news = load_news(ink_rows)
+        print(f"  [inkubator] novinkový režim: {len(inkubator_news)} položek")
     backs = load_backgrounds()
 
     write(["index.html"], page_vstup(cfg, backs))
-    write(["rozcestnik","index.html"], page_rozcestnik(cfg))
     write(["projekty","index.html"], page_projekty(cfg, projekty))
-    write(["inkubator","index.html"], page_inkubator(cfg, inkubator))
+    write(["inkubator","index.html"], page_inkubator(cfg, inkubator, inkubator_news))
     for p in projekty:
         write(["projekty", p["slug"], "index.html"], page_stream(p, projekty, inkubator, "p"))
     for p in inkubator:
