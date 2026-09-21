@@ -10,7 +10,7 @@ Spuštění:  python3 generator/build.py
 Vše ostatní (CSS, fonty, chování) je zabudováno zde a v šabloně.
 """
 
-import csv, os, html, shutil, re, json
+import csv, os, html, shutil, re, json, urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -20,7 +20,7 @@ OUT  = ROOT / "site"
 
 # ------- konfigurace webu -------
 DOMENA   = "https://informarchitekti.cz"      # kanonická adresa
-IMG_EXT  = (".jpg", ".jpeg", ".png", ".webp", ".avif", ".mp4", ".webm", ".gif")
+IMG_EXT  = (".jpg", ".jpeg", ".jfif", ".png", ".webp", ".avif", ".mp4", ".webm", ".gif")
 VIDEO_EXT= (".mp4", ".webm")
 
 # ---------------------------------------------------------------------------
@@ -236,7 +236,7 @@ def write(path_parts, content):
 def page_vstup(cfg, backs):
     name = cfg.get("nazev_atelieru", "IN—FORM—ARCHITEKTI")
     intro = cfg.get("uvodni_text", "")
-    data = [{"src": (b["file"] if b["file"].startswith("http") else f'obrazky/{b["file"]}'),
+    data = [{"src": (b["file"] if b["file"].startswith("http") else urllib.parse.quote(f'obrazky/{b["file"]}', safe="/")),
              "cap": b["cap"], "video": b["video"]} for b in backs]
     parts = name.split("—")
     brand = ("IN<span class=\"dash\">—</span>FORM<span class=\"dash2\">—</span>ARCHITEKTI"
