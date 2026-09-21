@@ -10,6 +10,7 @@ body{background:var(--white);color:var(--black);-webkit-font-smoothing:antialias
 
 /* ÚROVEŇ 0 */
 #vstup{position:relative;height:100vh;overflow:hidden;cursor:pointer;color:#fff;background:#141414}
+#vstup .brand{color:#fff;text-decoration:none;cursor:pointer}
 #vstup .bg{position:absolute;inset:0}
 #vstup .bg .ph-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   color:rgba(255,255,255,.32);font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-align:center;line-height:2;padding:0 24px}
