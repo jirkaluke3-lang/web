@@ -100,30 +100,43 @@ def pull_drive():
         for proj in drive_list(sections[sec]):
             if not is_folder(proj): continue
             slug = proj["name"].strip()
-            got, skipped = 0, []
+            got, skipped, dup = 0, [], []
             for fl in drive_list(proj["id"]):
                 if is_folder(fl): continue
                 if not is_wanted(fl["name"]):
                     skipped.append(fl["name"]); continue
-                drive_download(fl["id"], IMG / sec / slug / fl["name"])
+                dest = IMG / sec / slug / fl["name"]
+                if dest.exists():
+                    # v téhle složce na Disku je víc souborů se stejným názvem -
+                    # ten druhý (a další) by přepsal ten první, proto ho radši
+                    # NEstahujeme a jen na to upozorníme (žádná fotka se neztratí tiše).
+                    dup.append(fl["name"]); continue
+                drive_download(fl["id"], dest)
                 got += 1
             msg = f"· Disk {sec}/{slug}: staženo {got} souborů"
             if skipped:
                 msg += f" | PŘESKOČENO (nepodporovaný formát, převeďte na JPG): {', '.join(skipped)}"
+            if dup:
+                msg += f" | DUPLICITNÍ NÁZEV souboru (další soubor se stejným jménem, na Disku přejmenujte, jinak se nestáhne): {', '.join(dup)}"
             print(msg)
 
     for sec in SECTION_FLAT:
         if sec not in sections: continue
-        got, skipped = 0, []
+        got, skipped, dup = 0, [], []
         for fl in drive_list(sections[sec]):
             if is_folder(fl): continue
             if not is_wanted(fl["name"]):
                 skipped.append(fl["name"]); continue
-            drive_download(fl["id"], IMG / sec / fl["name"])
+            dest = IMG / sec / fl["name"]
+            if dest.exists():
+                dup.append(fl["name"]); continue
+            drive_download(fl["id"], dest)
             got += 1
         msg = f"· Disk {sec}/: staženo {got} souborů"
         if skipped:
             msg += f" | PŘESKOČENO (nepodporovaný formát, převeďte na JPG): {', '.join(skipped)}"
+        if dup:
+            msg += f" | DUPLICITNÍ NÁZEV souboru (další soubor se stejným jménem, na Disku přejmenujte, jinak se nestáhne): {', '.join(dup)}"
         print(msg)
 
 
