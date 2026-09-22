@@ -282,6 +282,20 @@ const bg=document.getElementById('bg'), cap=document.getElementById('cap'), fnam
 const TYPE_MS=90, PAUSE_MS=5000;
 let seq=0;
 function fallback(){{bg.style.backgroundImage='';bg.style.background='linear-gradient(160deg,#3d3d3d,#141414)';bg.innerHTML='';}}
+// barva textu: bílá (výchozí), černá jen tehdy, když je plocha za textem (střed obrazu) světlá.
+function pickTextColor(img){{
+  try{{
+    var cw=32, ch=32;
+    var c=document.createElement('canvas'); c.width=cw; c.height=ch;
+    var ctx=c.getContext('2d');
+    var iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height;
+    var cropW=iw*0.6, cropH=ih*0.6, sx=(iw-cropW)/2, sy=(ih-cropH)/2;
+    ctx.drawImage(img, sx, sy, cropW, cropH, 0, 0, cw, ch);
+    var d=ctx.getImageData(0,0,cw,ch).data, sum=0, n=0;
+    for(var k=0;k<d.length;k+=4){{ sum+=0.2126*d[k]+0.7152*d[k+1]+0.0722*d[k+2]; n++; }}
+    fname.style.color = (sum/n) > 175 ? '#111' : '#fff';
+  }}catch(e){{ fname.style.color = '#fff'; }}
+}}
 // psací stroj: pro každý zobrazený obraz zvlášť. Přepnutí na jiný obraz (klik i nové
 // načtení) okamžitě zruší běžící sekvenci a smaže text; pro nový obraz jede pravidlo znovu:
 // 5 s pauza -> napsání po písmenech -> 5 s pauza -> smazání najednou.
@@ -310,10 +324,11 @@ function scheduleTyping(p, mySeq){{
 function show(){{
   const mySeq=++seq;
   fname.textContent='';                 // okamžitý reset při každém přepnutí/načtení
+  fname.style.color='#fff';
   if(i<0){{fallback();cap.textContent='';return;}}
   const p=B[i];
   if(p.video){{bg.style.background='#141414';bg.innerHTML='';var v=document.createElement('video');v.className='media';v.src=p.src;v.autoplay=v.muted=v.loop=v.playsInline=true;v.onerror=fallback;bg.appendChild(v);scheduleTyping(p,mySeq);}}
-  else{{fallback();var im=new Image();im.onload=function(){{bg.innerHTML='';bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';scheduleTyping(p,mySeq);}};im.onerror=function(){{fallback();scheduleTyping(p,mySeq);}};im.src=p.src;}}
+  else{{fallback();var im=new Image();im.onload=function(){{bg.innerHTML='';bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';pickTextColor(im);scheduleTyping(p,mySeq);}};im.onerror=function(){{fallback();scheduleTyping(p,mySeq);}};im.src=p.src;}}
   cap.textContent=p.cap||'';
 }}
 show();
