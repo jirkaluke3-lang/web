@@ -22,8 +22,8 @@ body{background:var(--white);color:var(--black);-webkit-font-smoothing:antialias
   font-size:clamp(14px,1.4vw,17px);line-height:1.5}
 #vstup .filename{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
   z-index:2;pointer-events:none;text-align:center;line-height:1.05;font-weight:500;
-  font-size:clamp(14px,2vw,28px);letter-spacing:-.01em;text-transform:lowercase;color:#fff;opacity:.92;
-  mix-blend-mode:difference;padding:0 var(--pad);overflow-wrap:break-word}
+  font-size:clamp(14px,2vw,28px);letter-spacing:-.01em;text-transform:lowercase;color:#fff;
+  padding:0 var(--pad);overflow-wrap:break-word}
 #vstup .caption{position:absolute;left:var(--pad);bottom:var(--pad);z-index:2;opacity:.85}
 #vstup .enter{position:absolute;right:var(--pad);bottom:var(--pad);z-index:2}
 #vstup .enter span{display:inline-block;transition:transform .3s}
