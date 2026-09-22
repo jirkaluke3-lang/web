@@ -126,6 +126,12 @@ def load_settings():
     return {r["klic"]: (r.get("hodnota_cz") or "").strip()
             for r in read_csv("nastaveni") if r.get("klic")}
 
+def filename_parts(fn):
+    """Název souboru bez přípony rozdělený podle '_' na řádky, malými písmeny.
+    Jiné znaky (pomlčky, mezery, čísla, diakritika) se v rámci řádku nemění."""
+    stem = os.path.splitext(fn)[0]
+    return [part.lower() for part in stem.split("_") if part]
+
 def load_backgrounds():
     # titulky z listu POZADI, klíčované názvem souboru (volitelné)
     caps = {}
@@ -139,8 +145,11 @@ def load_backgrounds():
     if d.exists():
         for fn in sorted(os.listdir(d)):
             if fn.lower().endswith(IMG_EXT):
+                is_video = fn.lower().endswith(VIDEO_EXT)
                 out.append({"file": f"pozadi/{fn}", "cap": caps.get(fn, ""),
-                            "video": fn.lower().endswith(VIDEO_EXT)})
+                            "video": is_video,
+                            # u videí se název na střed nezobrazuje (viz page_vstup)
+                            "name_parts": [] if is_video else filename_parts(fn)})
     print(f"  [pozadi] {len(out)} souborů použito jako pozadí")
     return out
 
@@ -253,7 +262,7 @@ def page_vstup(cfg, backs):
     name = cfg.get("nazev_atelieru", "IN—FORM—ARCHITEKTI")
     intro = cfg.get("uvodni_text", "")
     data = [{"src": (b["file"] if b["file"].startswith("http") else urllib.parse.quote(f'obrazky/{b["file"]}', safe="/")),
-             "cap": b["cap"], "video": b["video"]} for b in backs]
+             "cap": b["cap"], "video": b["video"], "parts": b["name_parts"]} for b in backs]
     parts = name.split("\u2014")
     brand = ('IN<span class="dash">\u2014</span>FORM<span class="dash2">\u2014</span>ARCHITEKTI'
              if len(parts) == 3 else e(name))
@@ -263,21 +272,43 @@ def page_vstup(cfg, backs):
   <div class="bg" id="bg"></div>
   <a class="brand display" href="projekty/" id="brandLink">{brand}</a>
   {intro_html}
+  <p class="filename display" id="fname"></p>
   <p class="caption meta" id="cap"></p>
 </section>
 <script>
 const B={json.dumps(data, ensure_ascii=False)};
 let i = B.length ? Math.floor(Math.random()*B.length) : -1;
-const bg=document.getElementById('bg'), cap=document.getElementById('cap');
+const bg=document.getElementById('bg'), cap=document.getElementById('cap'), fname=document.getElementById('fname');
+const TYPE_MS=90, PAUSE_MS=5000;
 function fallback(){{bg.style.backgroundImage='';bg.style.background='linear-gradient(160deg,#3d3d3d,#141414)';bg.innerHTML='';}}
-function show(){{
-  if(i<0){{fallback();cap.textContent='';return;}}
+function show(onReady){{
+  if(i<0){{fallback();cap.textContent='';if(onReady)onReady(null);return;}}
   const p=B[i];
-  if(p.video){{bg.style.background='#141414';bg.innerHTML='';var v=document.createElement('video');v.className='media';v.src=p.src;v.autoplay=v.muted=v.loop=v.playsInline=true;v.onerror=fallback;bg.appendChild(v);}}
-  else{{fallback();var im=new Image();im.onload=function(){{bg.innerHTML='';bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';}};im.onerror=fallback;im.src=p.src;}}
+  if(p.video){{bg.style.background='#141414';bg.innerHTML='';var v=document.createElement('video');v.className='media';v.src=p.src;v.autoplay=v.muted=v.loop=v.playsInline=true;v.onerror=fallback;bg.appendChild(v);if(onReady)onReady(p);}}
+  else{{fallback();var im=new Image();im.onload=function(){{bg.innerHTML='';bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';if(onReady)onReady(p);}};im.onerror=function(){{fallback();if(onReady)onReady(p);}};im.src=p.src;}}
   cap.textContent=p.cap||'';
 }}
-show();
+// psací stroj: jen jednou, jen pro první (náhodně vybraný) obraz po načtení stránky
+function typeParts(parts, wi, ci, done){{
+  if(wi>=parts.length){{done();return;}}
+  const word=parts[wi];
+  if(ci===0 && wi>0) fname.appendChild(document.createElement('br'));
+  if(ci<word.length){{
+    fname.appendChild(document.createTextNode(word[ci]));
+    setTimeout(function(){{typeParts(parts,wi,ci+1,done);}}, TYPE_MS);
+  }} else {{
+    typeParts(parts,wi+1,0,done);
+  }}
+}}
+function introType(p){{
+  if(!p || p.video || !p.parts || !p.parts.length) return;
+  setTimeout(function(){{
+    typeParts(p.parts, 0, 0, function(){{
+      setTimeout(function(){{ fname.textContent=''; }}, PAUSE_MS);
+    }});
+  }}, PAUSE_MS);
+}}
+show(introType);
 document.getElementById('vstup').addEventListener('click',function(ev){{
   if(ev.target.closest('#brandLink')) return;
   if(B.length>1){{ i=(i+1)%B.length; show(); }}
