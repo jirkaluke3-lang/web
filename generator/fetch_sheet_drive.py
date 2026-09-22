@@ -36,6 +36,17 @@ SECTION_FLAT = ["pozadi", "nastaveni"]
 
 IMG_EXT = (".jpg", ".jpeg", ".jfif", ".png", ".webp", ".avif", ".mp4", ".webm", ".gif", ".txt")
 
+# Když se soubor na Disku přejmenuje (např. kvůli popisu) tak, že při psaní nového
+# jména omylem zmizí i přípona (běžná chyba - Disk při přejmenování označí celý
+# název včetně přípony), skript by ho jinak úplně přeskočil. Disk ale pozná typ
+# souboru i bez přípony (mimeType je vlastnost souboru, ne názvu) - podle toho typu
+# tedy příponu doplníme zpátky, aby se fotka na web přesto dostala.
+MIME_EXT = {
+    "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp",
+    "image/avif": ".avif", "image/gif": ".gif",
+    "video/mp4": ".mp4", "video/webm": ".webm",
+}
+
 
 def fetch(url, binary=False):
     req = urllib.request.Request(url, headers={"User-Agent": "inform-build/1.0"})
@@ -78,7 +89,20 @@ def drive_download(file_id, dest: Path):
 
 
 def is_folder(f): return f["mimeType"] == "application/vnd.google-apps.folder"
-def is_wanted(name): return name.lower().endswith(IMG_EXT)
+
+
+def wanted_name(fl):
+    """Vrátí jméno, pod kterým se má soubor uložit, pokud jde o použitelný obrázek/
+    video/text - podle přípony v názvu, nebo (chybí-li přípona) podle skutečného
+    typu souboru na Disku, s příponou automaticky doplněnou. Vrátí None, když
+    soubor mezi podporované typy nepatří (ten se přeskočí)."""
+    name = fl["name"]
+    if name.lower().endswith(IMG_EXT):
+        return name
+    ext = MIME_EXT.get(fl.get("mimeType", ""))
+    if ext:
+        return name + ext
+    return None
 
 
 def pull_drive():
@@ -100,12 +124,15 @@ def pull_drive():
         for proj in drive_list(sections[sec]):
             if not is_folder(proj): continue
             slug = proj["name"].strip()
-            got, skipped, dup = 0, [], []
+            got, skipped, dup, fixed = 0, [], [], []
             for fl in drive_list(proj["id"]):
                 if is_folder(fl): continue
-                if not is_wanted(fl["name"]):
+                name = wanted_name(fl)
+                if name is None:
                     skipped.append(fl["name"]); continue
-                dest = IMG / sec / slug / fl["name"]
+                if name != fl["name"]:
+                    fixed.append(f"{fl['name']} -> {name}")
+                dest = IMG / sec / slug / name
                 if dest.exists():
                     # v téhle složce na Disku je víc souborů se stejným názvem -
                     # ten druhý (a další) by přepsal ten první, proto ho radši
@@ -116,18 +143,23 @@ def pull_drive():
             msg = f"· Disk {sec}/{slug}: staženo {got} souborů"
             if skipped:
                 msg += f" | PŘESKOČENO (nepodporovaný formát, převeďte na JPG): {', '.join(skipped)}"
+            if fixed:
+                msg += f" | CHYBĚLA PŘÍPONA (doplněno podle typu souboru na Disku): {', '.join(fixed)}"
             if dup:
                 msg += f" | DUPLICITNÍ NÁZEV souboru (další soubor se stejným jménem, na Disku přejmenujte, jinak se nestáhne): {', '.join(dup)}"
             print(msg)
 
     for sec in SECTION_FLAT:
         if sec not in sections: continue
-        got, skipped, dup = 0, [], []
+        got, skipped, dup, fixed = 0, [], [], []
         for fl in drive_list(sections[sec]):
             if is_folder(fl): continue
-            if not is_wanted(fl["name"]):
+            name = wanted_name(fl)
+            if name is None:
                 skipped.append(fl["name"]); continue
-            dest = IMG / sec / fl["name"]
+            if name != fl["name"]:
+                fixed.append(f"{fl['name']} -> {name}")
+            dest = IMG / sec / name
             if dest.exists():
                 dup.append(fl["name"]); continue
             drive_download(fl["id"], dest)
@@ -135,6 +167,8 @@ def pull_drive():
         msg = f"· Disk {sec}/: staženo {got} souborů"
         if skipped:
             msg += f" | PŘESKOČENO (nepodporovaný formát, převeďte na JPG): {', '.join(skipped)}"
+        if fixed:
+            msg += f" | CHYBĚLA PŘÍPONA (doplněno podle typu souboru na Disku): {', '.join(fixed)}"
         if dup:
             msg += f" | DUPLICITNÍ NÁZEV souboru (další soubor se stejným jménem, na Disku přejmenujte, jinak se nestáhne): {', '.join(dup)}"
         print(msg)
