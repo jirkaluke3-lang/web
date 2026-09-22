@@ -280,35 +280,43 @@ const B={json.dumps(data, ensure_ascii=False)};
 let i = B.length ? Math.floor(Math.random()*B.length) : -1;
 const bg=document.getElementById('bg'), cap=document.getElementById('cap'), fname=document.getElementById('fname');
 const TYPE_MS=90, PAUSE_MS=5000;
+let seq=0;
 function fallback(){{bg.style.backgroundImage='';bg.style.background='linear-gradient(160deg,#3d3d3d,#141414)';bg.innerHTML='';}}
-function show(onReady){{
-  if(i<0){{fallback();cap.textContent='';if(onReady)onReady(null);return;}}
-  const p=B[i];
-  if(p.video){{bg.style.background='#141414';bg.innerHTML='';var v=document.createElement('video');v.className='media';v.src=p.src;v.autoplay=v.muted=v.loop=v.playsInline=true;v.onerror=fallback;bg.appendChild(v);if(onReady)onReady(p);}}
-  else{{fallback();var im=new Image();im.onload=function(){{bg.innerHTML='';bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';if(onReady)onReady(p);}};im.onerror=function(){{fallback();if(onReady)onReady(p);}};im.src=p.src;}}
-  cap.textContent=p.cap||'';
-}}
-// psací stroj: jen jednou, jen pro první (náhodně vybraný) obraz po načtení stránky
-function typeParts(parts, wi, ci, done){{
+// psací stroj: pro každý zobrazený obraz zvlášť. Přepnutí na jiný obraz (klik i nové
+// načtení) okamžitě zruší běžící sekvenci a smaže text; pro nový obraz jede pravidlo znovu:
+// 5 s pauza -> napsání po písmenech -> 5 s pauza -> smazání najednou.
+function typeParts(parts, wi, ci, mySeq, done){{
+  if(mySeq!==seq) return;               // mezitím se přepnul obraz - přestat
   if(wi>=parts.length){{done();return;}}
   const word=parts[wi];
   if(ci===0 && wi>0) fname.appendChild(document.createElement('br'));
   if(ci<word.length){{
     fname.appendChild(document.createTextNode(word[ci]));
-    setTimeout(function(){{typeParts(parts,wi,ci+1,done);}}, TYPE_MS);
+    setTimeout(function(){{typeParts(parts,wi,ci+1,mySeq,done);}}, TYPE_MS);
   }} else {{
-    typeParts(parts,wi+1,0,done);
+    typeParts(parts,wi+1,0,mySeq,done);
   }}
 }}
-function introType(p){{
-  if(!p || p.video || !p.parts || !p.parts.length) return;
+function scheduleTyping(p, mySeq){{
+  if(p.video || !p.parts || !p.parts.length) return;
   setTimeout(function(){{
-    typeParts(p.parts, 0, 0, function(){{
-      setTimeout(function(){{ fname.textContent=''; }}, PAUSE_MS);
+    if(mySeq!==seq) return;
+    typeParts(p.parts, 0, 0, mySeq, function(){{
+      if(mySeq!==seq) return;
+      setTimeout(function(){{ if(mySeq===seq) fname.textContent=''; }}, PAUSE_MS);
     }});
   }}, PAUSE_MS);
 }}
-show(introType);
+function show(){{
+  const mySeq=++seq;
+  fname.textContent='';                 // okamžitý reset při každém přepnutí/načtení
+  if(i<0){{fallback();cap.textContent='';return;}}
+  const p=B[i];
+  if(p.video){{bg.style.background='#141414';bg.innerHTML='';var v=document.createElement('video');v.className='media';v.src=p.src;v.autoplay=v.muted=v.loop=v.playsInline=true;v.onerror=fallback;bg.appendChild(v);scheduleTyping(p,mySeq);}}
+  else{{fallback();var im=new Image();im.onload=function(){{bg.innerHTML='';bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';scheduleTyping(p,mySeq);}};im.onerror=function(){{fallback();scheduleTyping(p,mySeq);}};im.src=p.src;}}
+  cap.textContent=p.cap||'';
+}}
+show();
 document.getElementById('vstup').addEventListener('click',function(ev){{
   if(ev.target.closest('#brandLink')) return;
   if(B.length>1){{ i=(i+1)%B.length; show(); }}
