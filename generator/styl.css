@@ -28,11 +28,17 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 #vstup .filename{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
   z-index:2;pointer-events:none;text-align:center;line-height:1.05;font-weight:500;
   font-size:var(--fname-size);letter-spacing:-.01em;color:inherit;
-  padding:0 var(--pad);max-width:100%}
+  /* užší okraje než obecné --pad - středový text má mít co nejvíc místa,
+     ať se zalomí opravdu jen tam, kde je v názvu souboru "_", nikdy dřív */
+  padding:0 clamp(12px,3vw,24px);max-width:100%}
 /* každý úsek mezi "_" je nedělitelný blok - řádek se zalomí jen na <br>, nikdy uvnitř úseku
    (na mezeře/pomlčce); overflow-wrap je jen záchranná brzda pro extrémně dlouhé jednotlivé slovo */
 #vstup .filename .w{white-space:nowrap;overflow-wrap:break-word;max-width:100%}
-#vstup .caption{position:absolute;left:var(--pad);bottom:var(--pad);z-index:2;opacity:.85}
+/* popisek vlevo dole (titulek z tabulky POZADI) - stejný typ i velikost písma
+   jako středový text, ne drobné VERZÁLKY z .meta */
+#vstup .caption{position:absolute;left:var(--pad);bottom:var(--pad);z-index:2;opacity:.85;
+  font-weight:500;font-size:var(--fname-size);letter-spacing:-.01em;text-transform:none;
+  max-width:min(50ch,calc(100vw - 2*var(--pad)))}
 #vstup .enter{position:absolute;right:var(--pad);bottom:var(--pad);z-index:2}
 #vstup .enter span{display:inline-block;transition:transform .3s}
 #vstup:hover .enter span{transform:translateX(8px)}
