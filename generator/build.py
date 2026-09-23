@@ -280,7 +280,7 @@ def page_vstup(cfg, backs):
 const B={json.dumps(data, ensure_ascii=False)};
 let i = B.length ? Math.floor(Math.random()*B.length) : -1;
 const vstup=document.getElementById('vstup'), bg=document.getElementById('bg'), cap=document.getElementById('cap'), fname=document.getElementById('fname');
-const TYPE_MS=90, PAUSE_MS=5000;
+const TYPE_MS=90, PRE_PAUSE_MS=5000, HOLD_MS=2000;
 let seq=0;
 function fallback(){{bg.style.backgroundImage='';bg.style.background='linear-gradient(160deg,#3d3d3d,#141414)';bg.innerHTML='';}}
 // barva VEŠKERÉHO textu na titulní straně (logo, středový text, popisek...) se řídí
@@ -301,7 +301,7 @@ function pickTextColor(img){{
 }}
 // psací stroj: pro každý zobrazený obraz zvlášť. Přepnutí na jiný obraz (klik i nové
 // načtení) okamžitě zruší běžící sekvenci a smaže text; pro nový obraz jede pravidlo znovu:
-// 5 s pauza -> napsání po písmenech -> 5 s pauza -> smazání najednou.
+// 5 s pauza -> napsání po písmenech -> 2 s pauza -> smazání najednou.
 function typeParts(parts, wi, ci, mySeq, done, span){{
   if(mySeq!==seq) return;               // mezitím se přepnul obraz - přestat
   if(wi>=parts.length){{done();return;}}
@@ -327,9 +327,9 @@ function scheduleTyping(p, mySeq){{
     if(mySeq!==seq) return;
     typeParts(p.parts, 0, 0, mySeq, function(){{
       if(mySeq!==seq) return;
-      setTimeout(function(){{ if(mySeq===seq) fname.textContent=''; }}, PAUSE_MS);
+      setTimeout(function(){{ if(mySeq===seq) fname.textContent=''; }}, HOLD_MS);
     }});
-  }}, PAUSE_MS);
+  }}, PRE_PAUSE_MS);
 }}
 function show(){{
   const mySeq=++seq;
