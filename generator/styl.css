@@ -1,4 +1,6 @@
-:root{--black:#0a0a0a;--white:#fff;--grey:#8a8a8a;--line:#e3e3e3;--pad:clamp(16px,3vw,44px)}
+:root{--black:#0a0a0a;--white:#fff;--grey:#8a8a8a;--line:#e3e3e3;--pad:clamp(16px,3vw,44px);
+  /* velikost středového textu na titulní straně - sdílí ji i e-mail na stránce Kontakt */
+  --fname-size:clamp(16px,2.3vw,30px)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
   font-family:'Ciutadella',Helvetica,Arial,sans-serif}
@@ -9,8 +11,11 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 
 
 /* ÚROVEŇ 0 */
+/* barva veškerého textu na titulní straně se řídí jasem aktuálního pozadí (viz JS) -
+   #vstup.style.color přepíná mezi #F7F7F7 (na tmavém obraze) a #4A4A4A (na světlém);
+   jednotlivé prvky pod ním proto barvu nastavují jen přes "inherit"/dědění. */
 #vstup{position:relative;height:100vh;overflow:hidden;cursor:pointer;color:#F7F7F7;background:#141414}
-#vstup .brand{color:#F7F7F7;text-decoration:none;cursor:pointer}
+#vstup .brand{color:inherit;text-decoration:none;cursor:pointer}
 #vstup .bg{position:absolute;inset:0}
 #vstup .bg .ph-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   color:rgba(247,247,247,.32);font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-align:center;line-height:2;padding:0 24px}
@@ -22,7 +27,7 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
   font-size:clamp(14px,1.4vw,17px);line-height:1.5}
 #vstup .filename{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
   z-index:2;pointer-events:none;text-align:center;line-height:1.05;font-weight:500;
-  font-size:clamp(14px,2vw,28px);letter-spacing:-.01em;color:#F7F7F7;
+  font-size:var(--fname-size);letter-spacing:-.01em;color:inherit;
   padding:0 var(--pad);max-width:100%}
 /* každý úsek mezi "_" je nedělitelný blok - řádek se zalomí jen na <br>, nikdy uvnitř úseku
    (na mezeře/pomlčce); overflow-wrap je jen záchranná brzda pro extrémně dlouhé jednotlivé slovo */
@@ -105,6 +110,8 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 .stack h4:first-child{margin-top:0}
 .stack p{line-height:1.6}
 .stack a{color:inherit;text-underline-offset:3px}
+/* e-mail na stránce Kontakt - stejná velikost jako středový text na titulní straně */
+.email-line{font-size:var(--fname-size)}
 
 @media(max-width:760px){
   .grid,.news{grid-template-columns:1fr}
