@@ -1,13 +1,14 @@
 :root{--black:#0a0a0a;--white:#fff;--grey:#8a8a8a;--line:#e3e3e3;--pad:clamp(16px,3vw,44px);
-  /* velikost středového textu, který se na titulní straně vypisuje přes obraz */
+  /* JEDNA velikost velkého písma. Titulní strana ji používá pro VEŠKERÝ text -
+     logo, středový text psaný přes obraz, úvodní text i popisek vlevo dole -
+     takže je všechno stejně velké. Používá ji i logo na podstránkách, aby bylo
+     na úvodní i následující stránce shodné. */
   --fname-size:clamp(32px,4.6vw,60px);
-  /* popisek vlevo dole na titulní straně a e-mail na stránce Kontakt */
-  --cap-size:clamp(16px,2.3vw,30px);
-  /* logo IN—FORM—ARCHITEKTI: JEDNA pevná velikost pro všechny stránky (titulní,
-     rozcestník, lišta podstránek). Záměrně bez vw - s šířkou okna se nemění.
-     Když se logo na úzký displej nevejde, zalomí se na dva řádky
-     (IN—FORM— / ARCHITEKTI) a velikost zůstane stejná. */
-  --brand-size:48px}
+  /* logo se řídí toutéž velikostí; kdyby ho někdo chtěl ladit zvlášť, přepíše
+     jen tuto proměnnou (např. --brand-size:48px). */
+  --brand-size:var(--fname-size);
+  /* menší popisek - už jen e-mail na stránce Kontakt (ne na titulní straně) */
+  --cap-size:clamp(16px,2.3vw,30px)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
   font-family:'Ciutadella',Helvetica,Arial,sans-serif}
@@ -32,14 +33,27 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 #vstup .bg{position:absolute;inset:0}
 #vstup .bg .ph-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   color:rgba(247,247,247,.32);font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-align:center;line-height:2;padding:0 24px}
-/* top:18px = stejné odsazení jako lišta podstránek -> logo při přechodu neposkočí */
+/* top:18px = stejné odsazení jako lišta podstránek -> logo při přechodu neposkočí.
+   position:absolute zároveň dělá z loga vztažný rámec pro překryvný obdélník .cover. */
 #vstup .brand{position:absolute;top:18px;left:var(--pad);z-index:2}
 #vstup .brand .dash{display:inline-block;transform-origin:left center;animation:dash .55s cubic-bezier(.8,0,.2,1) .30s both}
 #vstup .brand .dash2{display:inline-block;transform-origin:left center;animation:dash .55s cubic-bezier(.8,0,.2,1) .90s both}
+/* logo jako klikací dlaždice: po najetí myší (nebo zaměření z klávesnice) text zmizí
+   pod plnobarevným obdélníkem, který přesně překrývá text; barvu nastavuje JS náhodně
+   z palety. Obdélník je uvnitř odkazu, takže i po zakrytí zůstává klikací proklik na
+   PROJEKTY. Po odjetí myší je zase vidět text. */
+#vstup .brand .cover{position:absolute;inset:0;background:#DDA5B6;
+  opacity:0;transition:opacity .12s ease}
+#vstup .brand:hover .cover,#vstup .brand:focus-visible .cover{opacity:1}
 @keyframes dash{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-/* úvodní text vlevo dole - stejná velikost jako středový text psaný přes obraz (--fname-size) */
-#vstup .intro{position:absolute;left:var(--pad);bottom:calc(var(--pad) + 56px);z-index:2;max-width:20ch;
-  font-size:var(--fname-size);line-height:1.15;font-weight:500;letter-spacing:-.01em}
+/* levý dolní roh: úvodní text nad popiskem obrazu. Skládají se ve sloupci, takže
+   se nikdy nepřekrývají, ať mají řádků kolik chtějí. */
+#vstup .corner{position:absolute;left:var(--pad);bottom:var(--pad);z-index:2;
+  display:flex;flex-direction:column;gap:clamp(8px,1.6vh,20px);
+  max-width:calc(100vw - 2*var(--pad))}
+/* úvodní text - stejná velikost jako veškerý ostatní text na titulní straně */
+#vstup .intro{max-width:20ch;font-size:var(--fname-size);line-height:1.15;
+  font-weight:500;letter-spacing:-.01em}
 #vstup .filename{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
   z-index:2;pointer-events:none;text-align:center;line-height:1.05;font-weight:500;
   font-size:var(--fname-size);letter-spacing:-.01em;color:inherit;
@@ -52,11 +66,11 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 /* .filename je flex-sloupec, takže každý úsek už stojí na vlastním řádku sám;
    <br> z JS by tvořilo prázdné řádky navíc (u velkého písma obří mezery) */
 #vstup .filename br{display:none}
-/* popisek vlevo dole (titulek z tabulky POZADI) - stejný typ písma jako středový
-   text, ne drobné VERZÁLKY z .meta; velikost si drží vlastní (--cap-size) */
-#vstup .caption{position:absolute;left:var(--pad);bottom:var(--pad);z-index:2;opacity:.85;
-  font-weight:500;font-size:var(--cap-size);letter-spacing:-.01em;text-transform:none;
-  max-width:min(50ch,calc(100vw - 2*var(--pad)))}
+/* popisek obrazu (titulek z tabulky POZADI) - stejná velikost jako veškerý
+   ostatní text na titulní straně (--fname-size), ne drobné VERZÁLKY z .meta */
+#vstup .caption{opacity:.85;
+  font-weight:500;font-size:var(--fname-size);letter-spacing:-.01em;text-transform:none;
+  line-height:1.15;max-width:min(50ch,calc(100vw - 2*var(--pad)))}
 #vstup .enter{position:absolute;right:var(--pad);bottom:var(--pad);z-index:2}
 #vstup .enter span{display:inline-block;transition:transform .3s}
 #vstup:hover .enter span{transform:translateX(8px)}
@@ -140,7 +154,6 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
   .medailon{grid-template-columns:1fr}
   .gal{grid-template-columns:1fr 1fr}
   .bar{gap:14px}
-  #vstup .intro{bottom:calc(var(--pad) + 72px)}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
