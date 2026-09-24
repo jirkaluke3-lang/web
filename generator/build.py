@@ -299,7 +299,7 @@ const vstup=document.getElementById('vstup'), bg=document.getElementById('bg'), 
 const TYPE_MS=90, PRE_PAUSE_MS=5000, HOLD_MS=2000;
 // paleta pro klikací logo na titulní straně: po najetí myší se text schová pod
 // plnobarevný obdélník náhodné barvy z tohoto seznamu. Barvy klidně přepiš.
-const PALETA=['#DDA5B6','#F2CC8C','#F1E6C1','#3F6A8A','#4D5E72'];
+const PALETA=['#DDA5B6','#F2CC8C','#F1E6C1','#3F6A8A','#4D5E72','#FFA94D','#FF6F67','#F354A9','#FA2577','#F9B235','#38CEAC','#54D6DE','#7B8BFF','#660EF7','#9AB2C4','#F0B4D6','#E7C2D1','#E7B5F8','#F5F5E0','#ECECDC','#AADC9E','#FDB84B','#E07D3E','#351E1C','#000A5C'];
 (function(){{
   var bl=document.getElementById('brandLink'); if(!bl) return;
   var cover=bl.querySelector('.cover'); if(!cover) return;
