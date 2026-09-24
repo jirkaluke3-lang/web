@@ -178,12 +178,23 @@ def head(title, desc, canonical, depth, jsonld=None):
 <meta name="theme-color" content="#0a0a0a">
 <link rel="icon" type="image/svg+xml" href="{root}favicon.svg">
 <link rel="preload" as="font" type="font/woff" href="{root}fonty/Ciutadella-Regular.woff" crossorigin>
+<link rel="preload" as="font" type="font/woff" href="{root}fonty/Ciutadella-SemiBold.woff" crossorigin>
+<link rel="preload" as="font" type="font/woff" href="{root}fonty/Ciutadella-Medium.woff" crossorigin>
 <link rel="stylesheet" href="{root}fonty/fonty.css">
 <style>{CSS}</style>{ld}
 </head>
 <body>"""
 
 FOOT = "\n</body>\n</html>\n"
+
+def brand_html(anim=False):
+    """Logo IN—FORM—ARCHITEKTI. Dva nedělitelné bloky + <wbr>: na širokém okně
+    je logo na jednom řádku, na úzkém telefonu se zalomí JEN za druhou pomlčkou,
+    nikdy uprostřed slova. anim=True přidá animaci vysunutí pomlček (titulní strana)."""
+    d1 = '<span class="dash">\u2014</span>' if anim else "\u2014"
+    d2 = '<span class="dash2">\u2014</span>' if anim else "\u2014"
+    return (f'<span class="bl">IN{d1}FORM{d2}</span><wbr>'
+            '<span class="bl">ARCHITEKTI</span>')
 
 def bar(active, depth):
     root = "../" * depth
@@ -193,7 +204,7 @@ def bar(active, depth):
         f'<a href="{root}{href}" class="{"act" if k==active else ""}">{lbl}</a>'
         for k,lbl,href in items)
     return f"""<header class="bar meta">
-  <a class="home display" href="{root}">IN—FORM—ARCHITEKTI</a>
+  <a class="home display" href="{root}">{brand_html()}</a>
   <nav>{links}</nav>
 </header>"""
 
@@ -264,9 +275,7 @@ def page_vstup(cfg, backs):
     intro = cfg.get("uvodni_text", "")
     data = [{"src": (b["file"] if b["file"].startswith("http") else urllib.parse.quote(f'obrazky/{b["file"]}', safe="/")),
              "cap": b["cap"], "video": b["video"], "parts": b["name_parts"]} for b in backs]
-    parts = name.split("\u2014")
-    brand = ('IN<span class="dash">\u2014</span>FORM<span class="dash2">\u2014</span>ARCHITEKTI'
-             if len(parts) == 3 else e(name))
+    brand = brand_html(anim=True) if name.count("\u2014") == 2 else e(name)
     intro_html = f'<p class="intro body-t">{e(intro)}</p>' if intro else ""
     return head(name, cfg.get("medailon","")[:155], DOMENA+"/", 0) + f"""
 <section id="vstup" title="Klikněte pro další obraz">
@@ -351,7 +360,7 @@ document.getElementById('vstup').addEventListener('click',function(ev){{
 def page_rozcestnik(cfg):
     return head("IN—FORM—ARCHITEKTI", cfg.get("medailon","")[:155], DOMENA+"/rozcestnik/", 1) + f"""
 <section id="rozcestnik">
-  <a class="brand-s display" href="../">IN—FORM—ARCHITEKTI</a>
+  <a class="brand-s display" href="../">{brand_html()}</a>
   <nav>
     <a class="display" href="../onas/"><span class="pre">—</span>O NÁS</a>
     <a class="display" href="../projekty/"><span class="pre">—</span>PROJEKTY</a>
