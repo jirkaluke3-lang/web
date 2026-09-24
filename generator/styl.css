@@ -37,8 +37,9 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 #vstup .brand .dash{display:inline-block;transform-origin:left center;animation:dash .55s cubic-bezier(.8,0,.2,1) .30s both}
 #vstup .brand .dash2{display:inline-block;transform-origin:left center;animation:dash .55s cubic-bezier(.8,0,.2,1) .90s both}
 @keyframes dash{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-#vstup .intro{position:absolute;left:var(--pad);bottom:calc(var(--pad) + 56px);z-index:2;max-width:44ch;
-  font-size:clamp(14px,1.4vw,17px);line-height:1.5}
+/* úvodní text vlevo dole - stejná velikost jako středový text psaný přes obraz (--fname-size) */
+#vstup .intro{position:absolute;left:var(--pad);bottom:calc(var(--pad) + 56px);z-index:2;max-width:20ch;
+  font-size:var(--fname-size);line-height:1.15;font-weight:500;letter-spacing:-.01em}
 #vstup .filename{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
   z-index:2;pointer-events:none;text-align:center;line-height:1.05;font-weight:500;
   font-size:var(--fname-size);letter-spacing:-.01em;color:inherit;
