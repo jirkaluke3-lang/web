@@ -159,6 +159,11 @@ def load_backgrounds():
 # ---------------------------------------------------------------------------
 def e(s): return html.escape(s or "", quote=True)
 
+def ebr(s):
+    """Jako e(), ale ponechá ručně zapsané <br> (i <br/>, <br />) jako zalomení
+    řádku. Do textu v tabulce lze tedy napsat <br> a určit, kde se řádek zlomí."""
+    return re.sub(r"&lt;br\s*/?&gt;", "<br>", e(s))
+
 CSS = (ROOT / "generator" / "styl.css").read_text(encoding="utf-8")
 
 def head(title, desc, canonical, depth, jsonld=None):
@@ -187,14 +192,17 @@ def head(title, desc, canonical, depth, jsonld=None):
 
 FOOT = "\n</body>\n</html>\n"
 
-def brand_html(anim=False):
+def brand_html(anim=False, cover=False):
     """Logo IN—FORM—ARCHITEKTI. Dva nedělitelné bloky + <wbr>: na širokém okně
     je logo na jednom řádku, na úzkém telefonu se zalomí JEN za druhou pomlčkou,
-    nikdy uprostřed slova. anim=True přidá animaci vysunutí pomlček (titulní strana)."""
+    nikdy uprostřed slova. anim=True přidá animaci vysunutí pomlček (titulní strana).
+    cover=True přidá překryvný obdélník (.cover) pro efekt na titulní straně -
+    po najetí myší text zmizí pod plnou barvou (barvu vybírá JS z palety)."""
     d1 = '<span class="dash">\u2014</span>' if anim else "\u2014"
     d2 = '<span class="dash2">\u2014</span>' if anim else "\u2014"
+    cov = '<span class="cover" aria-hidden="true"></span>' if cover else ""
     return (f'<span class="bl">IN{d1}FORM{d2}</span><wbr>'
-            '<span class="bl">ARCHITEKTI</span>')
+            f'<span class="bl">ARCHITEKTI</span>{cov}')
 
 def bar(active, depth):
     root = "../" * depth
@@ -275,21 +283,32 @@ def page_vstup(cfg, backs):
     intro = cfg.get("uvodni_text", "")
     data = [{"src": (b["file"] if b["file"].startswith("http") else urllib.parse.quote(f'obrazky/{b["file"]}', safe="/")),
              "cap": b["cap"], "video": b["video"], "parts": b["name_parts"]} for b in backs]
-    brand = brand_html(anim=True) if name.count("\u2014") == 2 else e(name)
-    intro_html = f'<p class="intro body-t">{e(intro)}</p>' if intro else ""
+    brand = brand_html(anim=True, cover=True) if name.count("\u2014") == 2 else e(name)
+    intro_html = f'<p class="intro body-t">{ebr(intro)}</p>' if intro else ""
     return head(name, cfg.get("medailon","")[:155], DOMENA+"/", 0) + f"""
 <section id="vstup" title="Klikněte pro další obraz">
   <div class="bg" id="bg"></div>
   <a class="brand display" href="projekty/" id="brandLink">{brand}</a>
-  {intro_html}
   <p class="filename display" id="fname"></p>
-  <p class="caption meta" id="cap"></p>
+  <div class="corner">{intro_html}<p class="caption meta" id="cap"></p></div>
 </section>
 <script>
 const B={json.dumps(data, ensure_ascii=False)};
 let i = B.length ? Math.floor(Math.random()*B.length) : -1;
 const vstup=document.getElementById('vstup'), bg=document.getElementById('bg'), cap=document.getElementById('cap'), fname=document.getElementById('fname');
 const TYPE_MS=90, PRE_PAUSE_MS=5000, HOLD_MS=2000;
+// paleta pro klikací logo na titulní straně: po najetí myší se text schová pod
+// plnobarevný obdélník náhodné barvy z tohoto seznamu. Barvy klidně přepiš.
+const PALETA=['#DDA5B6','#F2CC8C','#F1E6C1','#3F6A8A','#4D5E72'];
+(function(){{
+  var bl=document.getElementById('brandLink'); if(!bl) return;
+  var cover=bl.querySelector('.cover'); if(!cover) return;
+  var last=-1;
+  function pick(){{ var j; do{{ j=Math.floor(Math.random()*PALETA.length); }}while(PALETA.length>1 && j===last); last=j; cover.style.background=PALETA[j]; }}
+  bl.addEventListener('mouseenter',pick);
+  bl.addEventListener('focusin',pick);
+}})();
+
 let seq=0;
 function fallback(){{bg.style.backgroundImage='';bg.style.background='linear-gradient(160deg,#3d3d3d,#141414)';bg.innerHTML='';}}
 // barva VEŠKERÉHO textu na titulní straně (logo, středový text, popisek...) se řídí
