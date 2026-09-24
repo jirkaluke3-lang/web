@@ -1,6 +1,13 @@
 :root{--black:#0a0a0a;--white:#fff;--grey:#8a8a8a;--line:#e3e3e3;--pad:clamp(16px,3vw,44px);
-  /* velikost středového textu na titulní straně - sdílí ji i e-mail na stránce Kontakt */
-  --fname-size:clamp(16px,2.3vw,30px)}
+  /* velikost středového textu, který se na titulní straně vypisuje přes obraz */
+  --fname-size:clamp(32px,4.6vw,60px);
+  /* popisek vlevo dole na titulní straně a e-mail na stránce Kontakt */
+  --cap-size:clamp(16px,2.3vw,30px);
+  /* logo IN—FORM—ARCHITEKTI: JEDNA pevná velikost pro všechny stránky (titulní,
+     rozcestník, lišta podstránek). Záměrně bez vw - s šířkou okna se nemění.
+     Když se logo na úzký displej nevejde, zalomí se na dva řádky
+     (IN—FORM— / ARCHITEKTI) a velikost zůstane stejná. */
+  --brand-size:48px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
   font-family:'Ciutadella',Helvetica,Arial,sans-serif}
@@ -9,6 +16,12 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 .body-t{font-size:clamp(15px,1.25vw,17px);line-height:1.55;font-weight:400;max-width:62ch}
 .screen{min-height:100vh}
 
+
+/* LOGO - společný vzhled na všech stránkách */
+.brand,.brand-s,.bar .home{font-size:var(--brand-size);font-weight:600;letter-spacing:-.018em;
+  line-height:1.05;text-transform:none;color:inherit;text-decoration:none}
+/* každá půlka loga je nedělitelná - zalomit lze jedině mezi nimi, za druhou pomlčkou */
+.brand .bl,.brand-s .bl,.bar .home .bl{white-space:nowrap}
 
 /* ÚROVEŇ 0 */
 /* barva veškerého textu na titulní straně se řídí jasem aktuálního pozadí (viz JS) -
@@ -19,7 +32,8 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 #vstup .bg{position:absolute;inset:0}
 #vstup .bg .ph-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   color:rgba(247,247,247,.32);font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-align:center;line-height:2;padding:0 24px}
-#vstup .brand{position:absolute;top:var(--pad);left:var(--pad);font-size:clamp(34px,6.6vw,92px);line-height:1;z-index:2}
+/* top:18px = stejné odsazení jako lišta podstránek -> logo při přechodu neposkočí */
+#vstup .brand{position:absolute;top:18px;left:var(--pad);z-index:2}
 #vstup .brand .dash{display:inline-block;transform-origin:left center;animation:dash .55s cubic-bezier(.8,0,.2,1) .30s both}
 #vstup .brand .dash2{display:inline-block;transform-origin:left center;animation:dash .55s cubic-bezier(.8,0,.2,1) .90s both}
 @keyframes dash{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -34,10 +48,13 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 /* každý úsek mezi "_" je nedělitelný blok - řádek se zalomí jen na <br>, nikdy uvnitř úseku
    (na mezeře/pomlčce); overflow-wrap je jen záchranná brzda pro extrémně dlouhé jednotlivé slovo */
 #vstup .filename .w{white-space:nowrap;overflow-wrap:break-word;max-width:100%}
-/* popisek vlevo dole (titulek z tabulky POZADI) - stejný typ i velikost písma
-   jako středový text, ne drobné VERZÁLKY z .meta */
+/* .filename je flex-sloupec, takže každý úsek už stojí na vlastním řádku sám;
+   <br> z JS by tvořilo prázdné řádky navíc (u velkého písma obří mezery) */
+#vstup .filename br{display:none}
+/* popisek vlevo dole (titulek z tabulky POZADI) - stejný typ písma jako středový
+   text, ne drobné VERZÁLKY z .meta; velikost si drží vlastní (--cap-size) */
 #vstup .caption{position:absolute;left:var(--pad);bottom:var(--pad);z-index:2;opacity:.85;
-  font-weight:500;font-size:var(--fname-size);letter-spacing:-.01em;text-transform:none;
+  font-weight:500;font-size:var(--cap-size);letter-spacing:-.01em;text-transform:none;
   max-width:min(50ch,calc(100vw - 2*var(--pad)))}
 #vstup .enter{position:absolute;right:var(--pad);bottom:var(--pad);z-index:2}
 #vstup .enter span{display:inline-block;transition:transform .3s}
@@ -46,7 +63,6 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 /* ÚROVEŇ 1 */
 #rozcestnik{display:flex;height:100vh;padding:var(--pad);flex-direction:column;justify-content:space-between}
 
-#rozcestnik .brand-s{font-size:clamp(16px,1.6vw,20px);color:inherit;text-decoration:none}
 #rozcestnik nav{display:flex;flex-direction:column;gap:clamp(4px,1vh,14px)}
 #rozcestnik nav a{color:inherit;text-decoration:none;font-size:clamp(42px,9vw,120px);line-height:1.04;width:max-content;max-width:100%}
 #rozcestnik nav a .pre{display:inline-block;width:0;overflow:hidden;white-space:nowrap;transition:width .35s cubic-bezier(.8,0,.2,1);vertical-align:baseline}
@@ -56,7 +72,6 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 /* lišta */
 .bar{position:sticky;top:0;background:var(--white);z-index:10;display:flex;align-items:baseline;gap:28px;
   padding:18px var(--pad);border-bottom:1px solid var(--line);flex-wrap:wrap}
-.bar .home{color:inherit;text-decoration:none;font-size:17px;white-space:nowrap}
 .bar nav{display:flex;gap:20px;flex-wrap:wrap}
 .bar nav a{color:var(--grey);text-decoration:none;padding-bottom:2px}
 .bar nav a:hover{color:#4A4A4A}
@@ -116,8 +131,8 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 .stack h4:first-child{margin-top:0}
 .stack p{line-height:1.6}
 .stack a{color:inherit;text-underline-offset:3px}
-/* e-mail na stránce Kontakt - stejná velikost jako středový text na titulní straně */
-.email-line{font-size:var(--fname-size)}
+/* e-mail na stránce Kontakt - stejná velikost jako popisek na titulní straně */
+.email-line{font-size:var(--cap-size)}
 
 @media(max-width:760px){
   .grid,.news{grid-template-columns:1fr}
