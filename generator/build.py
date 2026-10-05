@@ -484,17 +484,16 @@ def page_text(cfg, active, title, key, fallback=""):
     return head(f"{title} — IN—FORM—ARCHITEKTI", txt[:155] or title, f"{DOMENA}/{active}/", 1) + body + FOOT
 
 def page_kontakt(cfg):
+    # Stránka obsahuje jen text adresy z tabulky (NASTAVENI -> kontakt_adresa).
+    # Samostatné řádky E-mail / Telefon / IČ / Instagram se nevypisují - vše potřebné
+    # je přímo v textu adresy. Nadpis "Kontakt" zůstává kvůli vyhledávačům (h1),
+    # ale je neviditelný (viz .kontakt-h ve styl.css).
     adr = cfg.get("kontakt_adresa","").replace("\n","<br>")
-    email = cfg.get("kontakt_email",""); tel = cfg.get("kontakt_telefon","")
-    ic = cfg.get("kontakt_ic",""); ig = cfg.get("instagram","")
     body = f"""{bar("kontakt",1)}
-<div class="page"><h2 class="h-page display">Kontakt</h2>
-<div class="stack body-t">
+<div class="page">
+<div class="stack body-t kontakt">
+  <h1 class="kontakt-h">Kontakt</h1>
   <p>{adr}</p>
-  <p class="email-line" style="margin-top:12px">E-mail: <a href="mailto:{e(email)}">{e(email)}</a></p>
-  {f'<p style="margin-top:6px">Telefon: {e(tel)}</p>' if tel else ''}
-  {f'<p style="margin-top:6px">{e(ic)}</p>' if ic else ''}
-  {f'<p style="margin-top:12px"><a href="{e(ig)}">Instagram</a></p>' if ig else ''}
 </div></div>"""
     return head("Kontakt — IN—FORM—ARCHITEKTI", "Kontakt na ateliér IN—FORM—ARCHITEKTI.",
                 DOMENA+"/kontakt/", 1) + body + FOOT

@@ -147,7 +147,10 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 .stack p{line-height:1.6}
 .stack a{color:inherit;text-underline-offset:3px}
 /* e-mail na stránce Kontakt - stejná velikost jako popisek na titulní straně */
-.email-line{font-size:var(--cap-size)}
+/* nadpis stránky Kontakt je NEVIDITELNÝ: na webu se nezobrazí a nezabírá místo,
+   ale vyhledávače a čtečky pro nevidomé ho přečtou (běžná technika "visually hidden") */
+.kontakt .kontakt-h{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
 
 @media(max-width:760px){
   .grid,.news{grid-template-columns:1fr}
