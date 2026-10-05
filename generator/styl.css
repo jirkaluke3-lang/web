@@ -15,7 +15,7 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 .display{font-weight:600;letter-spacing:-.018em}
 .meta{font-weight:500;font-size:12px;letter-spacing:.075em;text-transform:uppercase}
 .body-t{font-size:clamp(15px,1.25vw,17px);line-height:1.55;font-weight:400;max-width:62ch}
-.screen{min-height:100vh}
+.screen{min-height:100vh;min-height:100svh}
 
 
 /* LOGO - společný vzhled na všech stránkách */
@@ -28,14 +28,18 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 /* barva veškerého textu na titulní straně se řídí jasem aktuálního pozadí (viz JS) -
    #vstup.style.color přepíná mezi #F7F7F7 (na tmavém obraze) a #4A4A4A (na světlém);
    jednotlivé prvky pod ním proto barvu nastavují jen přes "inherit"/dědění. */
-#vstup{position:relative;height:100vh;overflow:hidden;cursor:pointer;color:#F7F7F7;background:#141414}
+/* výška = VIDITELNÁ plocha. 100vh je na tabletech/mobilech vyšší než to, co je vidět
+   (nepočítá s lištami prohlížeče) -> logo nahoře a text dole by zajely pod lišty.
+   100svh = výška při zobrazených lištách; 100vh zůstává jako záloha pro staré prohlížeče. */
+#vstup{position:relative;height:100vh;height:100svh;overflow:hidden;cursor:pointer;color:#F7F7F7;background:#141414}
 #vstup .brand{color:inherit;text-decoration:none;cursor:pointer}
 #vstup .bg{position:absolute;inset:0}
 #vstup .bg .ph-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   color:rgba(247,247,247,.32);font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-align:center;line-height:2;padding:0 24px}
 /* top:18px = stejné odsazení jako lišta podstránek -> logo při přechodu neposkočí.
    position:absolute zároveň dělá z loga vztažný rámec pro překryvný obdélník .cover. */
-#vstup .brand{position:absolute;top:18px;left:var(--pad);z-index:2}
+/* max(..., env(safe-area-inset-*)) = odstup od výřezu/zaoblených rohů na iPadu a iPhonu */
+#vstup .brand{position:absolute;top:max(18px,env(safe-area-inset-top));left:max(var(--pad),env(safe-area-inset-left));z-index:2}
 #vstup .brand .dash{display:inline-block;transform-origin:left center;animation:dash .55s cubic-bezier(.8,0,.2,1) .30s both}
 #vstup .brand .dash2{display:inline-block;transform-origin:left center;animation:dash .55s cubic-bezier(.8,0,.2,1) .90s both}
 /* logo jako klikací dlaždice: po najetí myší (nebo zaměření z klávesnice) text zmizí
@@ -48,7 +52,7 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 @keyframes dash{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 /* levý dolní roh: úvodní text nad popiskem obrazu. Skládají se ve sloupci, takže
    se nikdy nepřekrývají, ať mají řádků kolik chtějí. */
-#vstup .corner{position:absolute;left:var(--pad);bottom:var(--pad);z-index:2;
+#vstup .corner{position:absolute;left:max(var(--pad),env(safe-area-inset-left));bottom:max(var(--pad),env(safe-area-inset-bottom));z-index:2;
   display:flex;flex-direction:column;gap:clamp(8px,1.6vh,20px);
   max-width:calc(100vw - 2*var(--pad))}
 /* úvodní text - stejná velikost jako veškerý ostatní text na titulní straně */
@@ -71,12 +75,12 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 #vstup .caption{opacity:.85;
   font-weight:500;font-size:var(--fname-size);letter-spacing:-.01em;text-transform:none;
   line-height:1.15;max-width:min(50ch,calc(100vw - 2*var(--pad)))}
-#vstup .enter{position:absolute;right:var(--pad);bottom:var(--pad);z-index:2}
+#vstup .enter{position:absolute;right:max(var(--pad),env(safe-area-inset-right));bottom:max(var(--pad),env(safe-area-inset-bottom));z-index:2}
 #vstup .enter span{display:inline-block;transition:transform .3s}
 #vstup:hover .enter span{transform:translateX(8px)}
 
 /* ÚROVEŇ 1 */
-#rozcestnik{display:flex;height:100vh;padding:var(--pad);flex-direction:column;justify-content:space-between}
+#rozcestnik{display:flex;height:100vh;height:100svh;padding:var(--pad);flex-direction:column;justify-content:space-between}
 
 #rozcestnik nav{display:flex;flex-direction:column;gap:clamp(4px,1vh,14px)}
 #rozcestnik nav a{color:inherit;text-decoration:none;font-size:clamp(42px,9vw,120px);line-height:1.04;width:max-content;max-width:100%}
