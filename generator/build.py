@@ -283,7 +283,13 @@ def page_vstup(cfg, backs):
     intro = cfg.get("uvodni_text", "")
     data = [{"src": (b["file"] if b["file"].startswith("http") else urllib.parse.quote(f'obrazky/{b["file"]}', safe="/")),
              "cap": b["cap"], "video": b["video"], "parts": b["name_parts"]} for b in backs]
-    brand = brand_html(anim=True, cover=True) if name.count("\u2014") == 2 else e(name)
+    # Logo je pevná značka: na titulní straně se sází vždy stejně jako v liště
+    # podstránek (dlouhé pomlčky, nedělitelné bloky, barevný efekt po najetí myší).
+    # Dříve se při jiné pomlčce v tabulce (– nebo -) vypsal jen holý text -> logo
+    # mělo jinou podobu a zmizel barevný efekt. Hodnota z tabulky se teď používá
+    # jen pro titulek okna prohlížeče a krátké/dlouhé pomlčky se v ní sjednotí.
+    name = re.sub(r"\s*[-\u2010-\u2015]\s*", "\u2014", name)
+    brand = brand_html(anim=True, cover=True)
     intro_html = f'<p class="intro body-t">{ebr(intro)}</p>' if intro else ""
     return head(name, cfg.get("medailon","")[:155], DOMENA+"/", 0) + f"""
 <section id="vstup" title="Klikněte pro další obraz">
