@@ -147,10 +147,16 @@ def load_backgrounds():
         for fn in sorted(os.listdir(d)):
             if fn.lower().endswith(IMG_EXT):
                 is_video = fn.lower().endswith(VIDEO_EXT)
-                out.append({"file": f"pozadi/{fn}", "cap": caps.get(fn, ""),
-                            "video": is_video,
-                            # u videí se název na střed nezobrazuje (viz page_vstup)
-                            "name_parts": [] if is_video else filename_parts(fn)})
+                # text uprostřed: přednost má titulek z listu POZADI, když tam obrázek
+                # není (nebo má titulek prázdný), použije se název souboru. V obou
+                # případech se řádky dělí podle "_". U videí bez titulku v tabulce se
+                # název souboru nevypisuje.
+                tab = caps.get(fn, "")
+                if tab:
+                    parts = [x.strip() for x in tab.split("_") if x.strip()]
+                else:
+                    parts = [] if is_video else filename_parts(fn)
+                out.append({"file": f"pozadi/{fn}", "video": is_video, "name_parts": parts})
     print(f"  [pozadi] {len(out)} souborů použito jako pozadí")
     return out
 
@@ -282,7 +288,7 @@ def page_vstup(cfg, backs):
     name = cfg.get("nazev_atelieru", "IN—FORM—ARCHITEKTI")
     intro = cfg.get("uvodni_text", "")
     data = [{"src": (b["file"] if b["file"].startswith("http") else urllib.parse.quote(f'obrazky/{b["file"]}', safe="/")),
-             "cap": b["cap"], "video": b["video"], "parts": b["name_parts"]} for b in backs]
+             "video": b["video"], "parts": b["name_parts"]} for b in backs]
     # Logo je pevná značka: na titulní straně se sází vždy stejně jako v liště
     # podstránek (dlouhé pomlčky, nedělitelné bloky, barevný efekt po najetí myší).
     # Dříve se při jiné pomlčce v tabulce (– nebo -) vypsal jen holý text -> logo
@@ -296,12 +302,12 @@ def page_vstup(cfg, backs):
   <div class="bg" id="bg"></div>
   <a class="brand display" href="projekty/" id="brandLink">{brand}</a>
   <p class="filename display" id="fname"></p>
-  <div class="corner">{intro_html}<p class="caption meta" id="cap"></p></div>
+  <div class="corner">{intro_html}</div>
 </section>
 <script>
 const B={json.dumps(data, ensure_ascii=False)};
 let i = B.length ? Math.floor(Math.random()*B.length) : -1;
-const vstup=document.getElementById('vstup'), bg=document.getElementById('bg'), cap=document.getElementById('cap'), fname=document.getElementById('fname');
+const vstup=document.getElementById('vstup'), bg=document.getElementById('bg'), fname=document.getElementById('fname');
 const TYPE_MS=90, PRE_PAUSE_MS=5000, HOLD_MS=2000;
 // paleta pro klikací logo na titulní straně: po najetí myší se text schová pod
 // plnobarevný obdélník náhodné barvy z tohoto seznamu. Barvy klidně přepiš.
@@ -369,11 +375,10 @@ function show(){{
   const mySeq=++seq;
   fname.textContent='';                 // okamžitý reset při každém přepnutí/načtení
   vstup.style.color='#F7F7F7';          // výchozí, dokud se nezjistí jas nového obrazu
-  if(i<0){{fallback();cap.textContent='';return;}}
+  if(i<0){{fallback();return;}}
   const p=B[i];
   if(p.video){{bg.style.background='#141414';bg.innerHTML='';var v=document.createElement('video');v.className='media';v.src=p.src;v.autoplay=v.muted=v.loop=v.playsInline=true;v.onerror=fallback;bg.appendChild(v);scheduleTyping(p,mySeq);}}
   else{{fallback();var im=new Image();im.onload=function(){{bg.innerHTML='';bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';pickTextColor(im);scheduleTyping(p,mySeq);}};im.onerror=function(){{fallback();scheduleTyping(p,mySeq);}};im.src=p.src;}}
-  cap.textContent=p.cap||'';
 }}
 show();
 document.getElementById('vstup').addEventListener('click',function(ev){{
