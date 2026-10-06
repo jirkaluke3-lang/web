@@ -173,7 +173,7 @@ def ebr(s):
 CSS = (ROOT / "generator" / "styl.css").read_text(encoding="utf-8")
 
 # skript bodu-kurzoru a společná PALETA - vkládá se do hlavičky každé stránky
-CURSOR_JS = "\n<script>\n// PALETA - náhodné barvy pro (1) obdélník přes logo na titulní straně a\n// (2) bod-kurzor nad odkazem. Barvy klidně přepiš / přidej / uber.\nvar PALETA=['#DDA5B6','#F2CC8C','#F1E6C1','#3F6A8A','#4D5E72','#FFA94D','#FF6F67','#F354A9','#FA2577','#F9B235','#38CEAC','#54D6DE','#7B8BFF','#660EF7','#9AB2C4','#F0B4D6','#E7C2D1','#E7B5F8','#F5F5E0','#ECECDC','#AADC9E','#FDB84B','#E07D3E','#351E1C','#000A5C'];\n// KURZOR-BOD: místo šipky myši se zobrazuje kulatý bod velikosti šipky.\n// Barva = barva písma (šedá #4A4A4A; na titulní straně se řídí jasem obrazu\n// stejně jako text). Nad aktivním odkazem bod změní barvu na náhodnou z PALETY.\n// Jen pro počítač s myší - na dotykových zařízeních se nic nemění.\n(function(){\n  if(!window.matchMedia || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;\n  var SIZE=16, GREY='#4A4A4A', dot=null, link=null, linkColor='';\n  function init(){\n    dot=document.createElement('div'); dot.id='kurzor'; dot.setAttribute('aria-hidden','true');\n    document.body.appendChild(dot);\n    document.documentElement.classList.add('kurzor-bod');\n  }\n  function baseColor(el){\n    var v=el && el.closest && el.closest('#vstup');\n    return v ? getComputedStyle(v).color : GREY;\n  }\n  function randomColor(){\n    var c, n=0;\n    do{ c=PALETA[Math.floor(Math.random()*PALETA.length)]; n++; }\n    while(n<20 && (c===linkColor || c===window.lastBrandColor));   // jiná než minule a než obdélník loga\n    return c;\n  }\n  document.addEventListener('mousemove',function(ev){\n    if(!dot) init();\n    dot.style.transform='translate('+(ev.clientX-SIZE/2)+'px,'+(ev.clientY-SIZE/2)+'px)';\n    dot.style.opacity='1';\n    var a=ev.target.closest ? ev.target.closest('a[href],button,[role=button],summary,label') : null;\n    if(a!==link){ link=a; if(a) linkColor=randomColor(); }\n    dot.style.background = link ? linkColor : baseColor(ev.target);\n  },{passive:true});\n  document.addEventListener('mouseout',function(ev){ if(!ev.relatedTarget && dot) dot.style.opacity='0'; });\n})();\n</script>"
+CURSOR_JS = "\n<script>\n// PALETA - náhodné barvy pro (1) obdélník přes logo na titulní straně a\n// (2) bod-kurzor nad odkazem. Barvy klidně přepiš / přidej / uber.\nvar PALETA=['#DDA5B6','#F2CC8C','#F1E6C1','#3F6A8A','#4D5E72','#FFA94D','#FF6F67','#F354A9','#FA2577','#F9B235','#38CEAC','#54D6DE','#7B8BFF','#660EF7','#9AB2C4','#F0B4D6','#E7C2D1','#E7B5F8','#F5F5E0','#ECECDC','#AADC9E','#FDB84B','#E07D3E','#351E1C','#000A5C'];\n// KURZOR-BOD: místo šipky myši se zobrazuje kulatý bod velikosti šipky.\n// Barva = barva písma (šedá #4A4A4A; na titulní straně se řídí jasem obrazu\n// stejně jako text). Nad aktivním odkazem bod změní barvu na náhodnou z PALETY.\n// Jen pro počítač s myší - na dotykových zařízeních se nic nemění.\n(function(){\n  if(!window.matchMedia || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;\n  var SIZE=16, GREY='#4A4A4A', dot=null, link=null, linkColor='';\n  function init(){\n    // vzhled bodu je přímo tady ve skriptu, aby bod fungoval vždy, i kdyby\n    // styl.css na webu byl jiné (starší) verze\n    var st=document.createElement('style');\n    st.textContent='html.kurzor-bod, html.kurzor-bod *{cursor:none !important}'+\n      '#kurzor{position:fixed;left:0;top:0;width:'+SIZE+'px;height:'+SIZE+'px;border-radius:50%;'+\n      'background:'+GREY+';pointer-events:none;z-index:2147483647;opacity:0;margin:0;padding:0;'+\n      'transition:background-color .15s ease,opacity .2s ease;will-change:transform}';\n    document.head.appendChild(st);\n    dot=document.createElement('div'); dot.id='kurzor'; dot.setAttribute('aria-hidden','true');\n    document.body.appendChild(dot);\n    document.documentElement.classList.add('kurzor-bod');\n  }\n  function baseColor(el){\n    var v=el && el.closest && el.closest('#vstup');\n    return v ? getComputedStyle(v).color : GREY;\n  }\n  function randomColor(){\n    var c, n=0;\n    do{ c=PALETA[Math.floor(Math.random()*PALETA.length)]; n++; }\n    while(n<20 && (c===linkColor || c===window.lastBrandColor));   // jiná než minule a než obdélník loga\n    return c;\n  }\n  document.addEventListener('mousemove',function(ev){\n    if(!dot) init();\n    dot.style.transform='translate('+(ev.clientX-SIZE/2)+'px,'+(ev.clientY-SIZE/2)+'px)';\n    dot.style.opacity='1';\n    var a=ev.target.closest ? ev.target.closest('a[href],button,[role=button],summary,label') : null;\n    if(a!==link){ link=a; if(a) linkColor=randomColor(); }\n    dot.style.background = link ? linkColor : baseColor(ev.target);\n  },{passive:true});\n  document.addEventListener('mouseout',function(ev){ if(!ev.relatedTarget && dot) dot.style.opacity='0'; });\n})();\n</script>"
 
 def head(title, desc, canonical, depth, jsonld=None):
     root = "../" * depth
@@ -306,7 +306,23 @@ def page_vstup(cfg, backs):
   <a class="brand display" href="projekty/" id="brandLink">{brand}</a>
   <p class="filename display" id="fname"></p>
   <div class="corner">{intro_html}</div>
+  <a class="kontakt-bod" href="kontakt/" aria-label="Kontakt" title="Kontakt"><span></span></a>
 </section>
+<style>
+/* BÍLÁ TEČKA uprostřed titulní strany = přímý odkaz na KONTAKT.
+   Tečka má velikost bodu-kurzoru (16 px). Klikací plocha (celý odkaz) má
+   DVOJNÁSOBNOU PLOCHU tečky: průměr 16 px × √2 ≈ 22,6 px. Pro větší
+   klikací plochu stačí zvýšit --kb-hit (např. 32px = dvojnásobný průměr). */
+#vstup .kontakt-bod{{--kb-dot:16px;--kb-hit:calc(var(--kb-dot) * 1.4142);
+  position:absolute;left:50%;top:50%;width:var(--kb-hit);height:var(--kb-hit);
+  transform:translate(-50%,-50%);border-radius:50%;z-index:3;
+  display:flex;align-items:center;justify-content:center;cursor:pointer}}
+#vstup .kontakt-bod span{{display:block;width:var(--kb-dot);height:var(--kb-dot);
+  border-radius:50%;background:#fff;pointer-events:none}}
+#vstup .kontakt-bod{{transition:opacity .2s ease}}
+/* během psaného textu (třída .pise z JS) je tečka skrytá a neklikací */
+#vstup.pise .kontakt-bod{{opacity:0;pointer-events:none}}
+</style>
 <script>
 const B={json.dumps(data, ensure_ascii=False)};
 let i = B.length ? Math.floor(Math.random()*B.length) : -1;
@@ -380,9 +396,10 @@ function scheduleTyping(p, mySeq){{
     if(mySeq!==seq) return;
     flashBrand(mySeq, function(){{
       if(p.video || !p.parts || !p.parts.length) return;   // u videa jen problik, bez textu
+      vstup.classList.add('pise');          // během psaného textu se tečka-odkaz skryje
       typeParts(p.parts, 0, 0, mySeq, function(){{
         if(mySeq!==seq) return;
-        setTimeout(function(){{ if(mySeq===seq) fname.textContent=''; }}, HOLD_MS);
+        setTimeout(function(){{ if(mySeq===seq){{ fname.textContent=''; vstup.classList.remove('pise'); }} }}, HOLD_MS);
       }});
     }});
   }}, PRE_PAUSE_MS);
@@ -390,6 +407,7 @@ function scheduleTyping(p, mySeq){{
 function show(){{
   const mySeq=++seq;
   fname.textContent='';                 // okamžitý reset při každém přepnutí/načtení
+  vstup.classList.remove('pise');       // text zmizel -> tečka-odkaz je zase vidět
   vstup.style.color='#F7F7F7';          // výchozí, dokud se nezjistí jas nového obrazu
   if(i<0){{fallback();return;}}
   const p=B[i];
@@ -404,7 +422,7 @@ let swiped=false;
 // do levé poloviny = předchozí. Kurzor ukazuje šipkou, kam klik povede.
 document.getElementById('vstup').addEventListener('click',function(ev){{
   if(swiped){{ swiped=false; return; }}  // klik vyvolaný koncem přejetí prstem ignorovat
-  if(ev.target.closest('#brandLink')) return;
+  if(ev.target.closest('#brandLink') || ev.target.closest('.kontakt-bod')) return;   // odkazy nepřepínají obraz
   go(ev.clientX < window.innerWidth/2 ? -1 : 1);
 }});
 vstup.addEventListener('mousemove',function(ev){{
