@@ -318,7 +318,14 @@ def page_vstup(cfg, backs):
   transform:translate(-50%,-50%);border-radius:50%;z-index:3;
   display:flex;align-items:center;justify-content:center;cursor:pointer}}
 #vstup .kontakt-bod span{{display:block;width:var(--kb-dot);height:var(--kb-dot);
-  border-radius:50%;background:#fff;pointer-events:none}}
+  border-radius:50%;background:currentColor;pointer-events:none;transition:background-color .12s ease}}
+/* tečka má STEJNÁ PRAVIDLA jako logo IN—FORM—ARCHITEKTI:
+   - barva = barva textu (světlá na tmavém obraze, tmavá na světlém), dědí se z #vstup
+   - po najetí myší i při probliknutí před psaním textu dostane barvu z PALETY,
+     při probliknutí přesně stejnou jako obdélník přes logo */
+#vstup .kontakt-bod{{color:inherit}}
+#vstup .kontakt-bod:hover span,#vstup .kontakt-bod:focus-visible span,
+#vstup .kontakt-bod.flash span{{background:var(--kb-barva,currentColor)}}
 #vstup .kontakt-bod{{transition:opacity .2s ease}}
 /* během psaného textu (třída .pise z JS) je tečka skrytá a neklikací */
 #vstup.pise .kontakt-bod{{opacity:0;pointer-events:none}}
@@ -336,6 +343,9 @@ const TYPE_MS=90, PRE_PAUSE_MS=5000, HOLD_MS=2000;
   var last=-1;
   function pick(){{ var j; do{{ j=Math.floor(Math.random()*PALETA.length); }}while(PALETA.length>1 && j===last); last=j; cover.style.background=PALETA[j]; window.lastBrandColor=PALETA[j]; }}
   window.pickBrandColor=pick;          // používá i problik loga před psaním textu
+  var kb=document.querySelector('#vstup .kontakt-bod');
+  if(kb){{ var kbPick=function(){{ pick(); kb.style.setProperty('--kb-barva', window.lastBrandColor); }};
+    kb.addEventListener('mouseenter',kbPick); kb.addEventListener('focusin',kbPick); }}
   bl.addEventListener('mouseenter',pick);
   bl.addEventListener('focusin',pick);
 }})();
@@ -388,8 +398,10 @@ function flashBrand(mySeq, done){{
   var bl=document.getElementById('brandLink');
   if(!bl || !window.pickBrandColor){{ done(); return; }}
   window.pickBrandColor();
+  var kb=document.querySelector('#vstup .kontakt-bod');
+  if(kb){{ kb.style.setProperty('--kb-barva', window.lastBrandColor); kb.classList.add('flash'); }}
   bl.classList.add('flash');
-  setTimeout(function(){{ bl.classList.remove('flash'); if(mySeq===seq) done(); }}, FLASH_MS);
+  setTimeout(function(){{ bl.classList.remove('flash'); if(kb) kb.classList.remove('flash'); if(mySeq===seq) done(); }}, FLASH_MS);
 }}
 function scheduleTyping(p, mySeq){{
   setTimeout(function(){{
@@ -408,6 +420,7 @@ function show(){{
   const mySeq=++seq;
   fname.textContent='';                 // okamžitý reset při každém přepnutí/načtení
   vstup.classList.remove('pise');       // text zmizel -> tečka-odkaz je zase vidět
+  vstup.querySelectorAll('.flash').forEach(function(el){{ el.classList.remove('flash'); }});  // přerušit problik
   vstup.style.color='#F7F7F7';          // výchozí, dokud se nezjistí jas nového obrazu
   if(i<0){{fallback();return;}}
   const p=B[i];
