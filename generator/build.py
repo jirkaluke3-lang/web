@@ -317,6 +317,7 @@ const PALETA=['#DDA5B6','#F2CC8C','#F1E6C1','#3F6A8A','#4D5E72','#FFA94D','#FF6F
   var cover=bl.querySelector('.cover'); if(!cover) return;
   var last=-1;
   function pick(){{ var j; do{{ j=Math.floor(Math.random()*PALETA.length); }}while(PALETA.length>1 && j===last); last=j; cover.style.background=PALETA[j]; }}
+  window.pickBrandColor=pick;          // používá i problik loga před psaním textu
   bl.addEventListener('mouseenter',pick);
   bl.addEventListener('focusin',pick);
 }})();
@@ -361,13 +362,26 @@ function typeParts(parts, wi, ci, mySeq, done, span){{
     typeParts(parts,wi+1,0,mySeq,done,span);
   }}
 }}
+// PROBLIK LOGA: po 5 s pauze se přes nápis IN—FORM—ARCHITEKTI na chvíli objeví
+// barevný obdélník (náhodná barva z PALETY) - stejný jako po najetí myší - aby bylo
+// zřejmé, že logo je odkaz. Hned po problikutí začne psaní textu.
+const FLASH_MS=600;
+function flashBrand(mySeq, done){{
+  var bl=document.getElementById('brandLink');
+  if(!bl || !window.pickBrandColor){{ done(); return; }}
+  window.pickBrandColor();
+  bl.classList.add('flash');
+  setTimeout(function(){{ bl.classList.remove('flash'); if(mySeq===seq) done(); }}, FLASH_MS);
+}}
 function scheduleTyping(p, mySeq){{
-  if(p.video || !p.parts || !p.parts.length) return;
   setTimeout(function(){{
     if(mySeq!==seq) return;
-    typeParts(p.parts, 0, 0, mySeq, function(){{
-      if(mySeq!==seq) return;
-      setTimeout(function(){{ if(mySeq===seq) fname.textContent=''; }}, HOLD_MS);
+    flashBrand(mySeq, function(){{
+      if(p.video || !p.parts || !p.parts.length) return;   // u videa jen problik, bez textu
+      typeParts(p.parts, 0, 0, mySeq, function(){{
+        if(mySeq!==seq) return;
+        setTimeout(function(){{ if(mySeq===seq) fname.textContent=''; }}, HOLD_MS);
+      }});
     }});
   }}, PRE_PAUSE_MS);
 }}
@@ -381,9 +395,42 @@ function show(){{
   else{{fallback();var im=new Image();im.onload=function(){{bg.innerHTML='';bg.style.backgroundImage='url('+p.src+')';bg.style.backgroundSize='cover';bg.style.backgroundPosition='center';pickTextColor(im);scheduleTyping(p,mySeq);}};im.onerror=function(){{fallback();scheduleTyping(p,mySeq);}};im.src=p.src;}}
 }}
 show();
+// přepínání obrazů: krok +1 = další, -1 = předchozí (dokola)
+function go(step){{ if(B.length>1){{ i=(i+step+B.length)%B.length; show(); }} }}
+let swiped=false;
+// KLIK: obrazovka je rozdělená napůl - klik do pravé poloviny = další obraz,
+// do levé poloviny = předchozí. Kurzor ukazuje šipkou, kam klik povede.
 document.getElementById('vstup').addEventListener('click',function(ev){{
+  if(swiped){{ swiped=false; return; }}  // klik vyvolaný koncem přejetí prstem ignorovat
   if(ev.target.closest('#brandLink')) return;
-  if(B.length>1){{ i=(i+1)%B.length; show(); }}
+  go(ev.clientX < window.innerWidth/2 ? -1 : 1);
+}});
+vstup.addEventListener('mousemove',function(ev){{
+  vstup.classList.toggle('vlevo', ev.clientX < window.innerWidth/2);
+}});
+// DOTYK (tablet, telefon): přejetí prstem doleva = další obraz, doprava = předchozí.
+// Za přejetí se počítá pohyb aspoň 40 px převážně do strany; krátké klepnutí
+// dál funguje jako klik (další obraz), klepnutí na logo dál otevírá web.
+(function(){{
+  var x0=null, y0=null, t0=0;
+  vstup.addEventListener('touchstart',function(ev){{
+    if(ev.touches.length!==1){{ x0=null; return; }}
+    x0=ev.touches[0].clientX; y0=ev.touches[0].clientY; t0=Date.now();
+  }},{{passive:true}});
+  vstup.addEventListener('touchend',function(ev){{
+    if(x0===null) return;
+    var t=ev.changedTouches[0], dx=t.clientX-x0, dy=t.clientY-y0;
+    x0=null;
+    if(Math.abs(dx)>=40 && Math.abs(dx)>Math.abs(dy)*1.2 && Date.now()-t0<800){{
+      swiped=true; setTimeout(function(){{ swiped=false; }}, 400);
+      go(dx<0 ? 1 : -1);
+    }}
+  }},{{passive:true}});
+}})();
+// KLÁVESNICE (počítač): šipka vpravo = další obraz, vlevo = předchozí
+document.addEventListener('keydown',function(ev){{
+  if(ev.key==='ArrowRight') go(1);
+  else if(ev.key==='ArrowLeft') go(-1);
 }});
 </script>""" + FOOT
 
