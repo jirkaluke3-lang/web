@@ -172,6 +172,9 @@ def ebr(s):
 
 CSS = (ROOT / "generator" / "styl.css").read_text(encoding="utf-8")
 
+# skript bodu-kurzoru a společná PALETA - vkládá se do hlavičky každé stránky
+CURSOR_JS = "\n<script>\n// PALETA - náhodné barvy pro (1) obdélník přes logo na titulní straně a\n// (2) bod-kurzor nad odkazem. Barvy klidně přepiš / přidej / uber.\nvar PALETA=['#DDA5B6','#F2CC8C','#F1E6C1','#3F6A8A','#4D5E72','#FFA94D','#FF6F67','#F354A9','#FA2577','#F9B235','#38CEAC','#54D6DE','#7B8BFF','#660EF7','#9AB2C4','#F0B4D6','#E7C2D1','#E7B5F8','#F5F5E0','#ECECDC','#AADC9E','#FDB84B','#E07D3E','#351E1C','#000A5C'];\n// KURZOR-BOD: místo šipky myši se zobrazuje kulatý bod velikosti šipky.\n// Barva = barva písma (šedá #4A4A4A; na titulní straně se řídí jasem obrazu\n// stejně jako text). Nad aktivním odkazem bod změní barvu na náhodnou z PALETY.\n// Jen pro počítač s myší - na dotykových zařízeních se nic nemění.\n(function(){\n  if(!window.matchMedia || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;\n  var SIZE=16, GREY='#4A4A4A', dot=null, link=null, linkColor='';\n  function init(){\n    dot=document.createElement('div'); dot.id='kurzor'; dot.setAttribute('aria-hidden','true');\n    document.body.appendChild(dot);\n    document.documentElement.classList.add('kurzor-bod');\n  }\n  function baseColor(el){\n    var v=el && el.closest && el.closest('#vstup');\n    return v ? getComputedStyle(v).color : GREY;\n  }\n  function randomColor(){\n    var c, n=0;\n    do{ c=PALETA[Math.floor(Math.random()*PALETA.length)]; n++; }\n    while(n<20 && (c===linkColor || c===window.lastBrandColor));   // jiná než minule a než obdélník loga\n    return c;\n  }\n  document.addEventListener('mousemove',function(ev){\n    if(!dot) init();\n    dot.style.transform='translate('+(ev.clientX-SIZE/2)+'px,'+(ev.clientY-SIZE/2)+'px)';\n    dot.style.opacity='1';\n    var a=ev.target.closest ? ev.target.closest('a[href],button,[role=button],summary,label') : null;\n    if(a!==link){ link=a; if(a) linkColor=randomColor(); }\n    dot.style.background = link ? linkColor : baseColor(ev.target);\n  },{passive:true});\n  document.addEventListener('mouseout',function(ev){ if(!ev.relatedTarget && dot) dot.style.opacity='0'; });\n})();\n</script>"
+
 def head(title, desc, canonical, depth, jsonld=None):
     root = "../" * depth
     ld = f'\n<script type="application/ld+json">{json.dumps(jsonld, ensure_ascii=False)}</script>' if jsonld else ""
@@ -192,7 +195,7 @@ def head(title, desc, canonical, depth, jsonld=None):
 <link rel="preload" as="font" type="font/woff" href="{root}fonty/Ciutadella-SemiBold.woff" crossorigin>
 <link rel="preload" as="font" type="font/woff" href="{root}fonty/Ciutadella-Medium.woff" crossorigin>
 <link rel="stylesheet" href="{root}fonty/fonty.css">
-<style>{CSS}</style>{ld}
+<style>{CSS}</style>{CURSOR_JS}{ld}
 </head>
 <body>"""
 
@@ -309,14 +312,13 @@ const B={json.dumps(data, ensure_ascii=False)};
 let i = B.length ? Math.floor(Math.random()*B.length) : -1;
 const vstup=document.getElementById('vstup'), bg=document.getElementById('bg'), fname=document.getElementById('fname');
 const TYPE_MS=90, PRE_PAUSE_MS=5000, HOLD_MS=2000;
-// paleta pro klikací logo na titulní straně: po najetí myší se text schová pod
-// plnobarevný obdélník náhodné barvy z tohoto seznamu. Barvy klidně přepiš.
-const PALETA=['#DDA5B6','#F2CC8C','#F1E6C1','#3F6A8A','#4D5E72','#FFA94D','#FF6F67','#F354A9','#FA2577','#F9B235','#38CEAC','#54D6DE','#7B8BFF','#660EF7','#9AB2C4','#F0B4D6','#E7C2D1','#E7B5F8','#F5F5E0','#ECECDC','#AADC9E','#FDB84B','#E07D3E','#351E1C','#000A5C'];
+// PALETA (barvy obdélníku přes logo i bodu-kurzoru) je jedna pro celý web -
+// je v hlavičce každé stránky, viz CURSOR_JS na začátku build.py.
 (function(){{
   var bl=document.getElementById('brandLink'); if(!bl) return;
   var cover=bl.querySelector('.cover'); if(!cover) return;
   var last=-1;
-  function pick(){{ var j; do{{ j=Math.floor(Math.random()*PALETA.length); }}while(PALETA.length>1 && j===last); last=j; cover.style.background=PALETA[j]; }}
+  function pick(){{ var j; do{{ j=Math.floor(Math.random()*PALETA.length); }}while(PALETA.length>1 && j===last); last=j; cover.style.background=PALETA[j]; window.lastBrandColor=PALETA[j]; }}
   window.pickBrandColor=pick;          // používá i problik loga před psaním textu
   bl.addEventListener('mouseenter',pick);
   bl.addEventListener('focusin',pick);
