@@ -34,7 +34,9 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
    a Chrome na Androidu (tablety) počítají různě a často větší než viditelná plocha.
    Protože je sekce "fixed", nemá stránka pod ní žádný obsah -> nedá se skrolovat. */
 #vstup{position:fixed;inset:0;overflow:hidden;cursor:pointer;color:#F7F7F7;background:#141414;
-  overscroll-behavior:none;touch-action:manipulation}
+  overscroll-behavior:none;touch-action:none}
+/* touch-action:none = prohlížeč si přejetí prstem po titulní straně nebere pro sebe
+   (zoom, posun) a nechá ho skriptu pro přepínání obrazů */
 #vstup .brand{color:inherit;text-decoration:none;cursor:pointer}
 #vstup .bg{position:absolute;inset:0}
 #vstup .bg .ph-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -52,6 +54,12 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 #vstup .brand .cover{position:absolute;inset:0;background:#DDA5B6;
   opacity:0;transition:opacity .12s ease}
 #vstup .brand:hover .cover,#vstup .brand:focus-visible .cover{opacity:1}
+/* problik před psaním textu (JS přidá logu na chvíli třídu .flash) */
+#vstup .brand.flash .cover{opacity:1}
+/* kurzor: v pravé polovině šipka vpřed, v levé (třída .vlevo z JS) šipka vzad */
+#vstup{cursor:e-resize}
+#vstup.vlevo{cursor:w-resize}
+#vstup .brand{cursor:pointer}
 @keyframes dash{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 /* levý dolní roh: úvodní text nad popiskem obrazu. Skládají se ve sloupci, takže
    se nikdy nepřekrývají, ať mají řádků kolik chtějí. */
