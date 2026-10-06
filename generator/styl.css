@@ -184,3 +184,10 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 .ink-eyebrow{color:var(--grey);margin-bottom:12px}
 .intro-block{color:#4A4A4A;margin-bottom:clamp(28px,4vh,52px)}
 .card{display:block;color:inherit;text-decoration:none}
+
+/* KURZOR-BOD (viz CURSOR_JS v build.py). Šipka myši se skryje jen když skript
+   bod opravdu vytvořil (třída .kurzor-bod) - bez JS zůstane běžná šipka. */
+html.kurzor-bod, html.kurzor-bod *{cursor:none !important}
+#kurzor{position:fixed;left:0;top:0;width:16px;height:16px;border-radius:50%;
+  background:#4A4A4A;pointer-events:none;z-index:2147483647;opacity:0;
+  transition:background-color .15s ease, opacity .2s ease;will-change:transform}
