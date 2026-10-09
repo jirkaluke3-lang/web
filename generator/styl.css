@@ -170,6 +170,13 @@ body{background:var(--white);color:#4A4A4A;-webkit-font-smoothing:antialiased;
 .kontakt .kontakt-h{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
   overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
 
+/* .vh = obecný neviditelný nadpis (stejná technika jako .kontakt-h výše).
+   Používá stránka Projekty: nemá vlastní viditelný text "Projekty" (jen
+   nepovinný medailon "Ateliér"), ale kvůli vyhledávačům a čtečkám pro
+   nevidomé potřebuje jeden hlavní nadpis prvni urovne se jménem stránky. */
+.vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+
 @media(max-width:760px){
   .grid,.news{grid-template-columns:1fr}
   .medailon{grid-template-columns:1fr}
