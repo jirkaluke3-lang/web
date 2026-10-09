@@ -175,6 +175,19 @@ CSS = (ROOT / "generator" / "styl.css").read_text(encoding="utf-8")
 # skript bodu-kurzoru a společná PALETA - vkládá se do hlavičky každé stránky
 CURSOR_JS = "\n<script>\n// PALETA - náhodné barvy pro (1) obdélník přes logo na titulní straně a\n// (2) bod-kurzor nad odkazem. Barvy klidně přepiš / přidej / uber.\nvar PALETA=['#DDA5B6','#F2CC8C','#F1E6C1','#3F6A8A','#4D5E72','#FFA94D','#FF6F67','#F354A9','#FA2577','#F9B235','#38CEAC','#54D6DE','#7B8BFF','#660EF7','#9AB2C4','#F0B4D6','#E7C2D1','#E7B5F8','#F5F5E0','#ECECDC','#AADC9E','#FDB84B','#E07D3E','#351E1C','#000A5C'];\n// KURZOR-BOD: místo šipky myši se zobrazuje kulatý bod velikosti šipky.\n// Barva = barva písma (šedá #4A4A4A; na titulní straně se řídí jasem obrazu\n// stejně jako text). Nad aktivním odkazem bod změní barvu na náhodnou z PALETY.\n// Jen pro počítač s myší - na dotykových zařízeních se nic nemění.\n(function(){\n  if(!window.matchMedia || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;\n  var SIZE=16, GREY='#4A4A4A', dot=null, link=null, linkColor='';\n  function init(){\n    // vzhled bodu je přímo tady ve skriptu, aby bod fungoval vždy, i kdyby\n    // styl.css na webu byl jiné (starší) verze\n    var st=document.createElement('style');\n    st.textContent='html.kurzor-bod, html.kurzor-bod *{cursor:none !important}'+\n      '#kurzor{position:fixed;left:0;top:0;width:'+SIZE+'px;height:'+SIZE+'px;border-radius:50%;'+\n      'background:'+GREY+';pointer-events:none;z-index:2147483647;opacity:0;margin:0;padding:0;'+\n      'transition:background-color .15s ease,opacity .2s ease;will-change:transform}';\n    document.head.appendChild(st);\n    dot=document.createElement('div'); dot.id='kurzor'; dot.setAttribute('aria-hidden','true');\n    document.body.appendChild(dot);\n    document.documentElement.classList.add('kurzor-bod');\n  }\n  function baseColor(el){\n    var v=el && el.closest && el.closest('#vstup');\n    return v ? getComputedStyle(v).color : GREY;\n  }\n  function randomColor(){\n    var c, n=0;\n    do{ c=PALETA[Math.floor(Math.random()*PALETA.length)]; n++; }\n    while(n<20 && (c===linkColor || c===window.lastBrandColor));   // jiná než minule a než obdélník loga\n    return c;\n  }\n  document.addEventListener('mousemove',function(ev){\n    if(!dot) init();\n    dot.style.transform='translate('+(ev.clientX-SIZE/2)+'px,'+(ev.clientY-SIZE/2)+'px)';\n    dot.style.opacity='1';\n    var a=ev.target.closest ? ev.target.closest('a[href],button,[role=button],summary,label') : null;\n    if(a!==link){ link=a; if(a) linkColor=randomColor(); }\n    dot.style.background = link ? linkColor : baseColor(ev.target);\n  },{passive:true});\n  document.addEventListener('mouseout',function(ev){ if(!ev.relatedTarget && dot) dot.style.opacity='0'; });\n})();\n</script>"
 
+# Google Analytics (GA4) - měřicí značka, vkládá se do hlavičky každé stránky.
+# ID měření najdeš v Analytics: Administrátor → Datové streamy → informarchitekti.cz
+GA_ID = "G-C35JR8P8WY"
+GA_JS = f"""
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){{dataLayer.push(arguments);}}
+  gtag('js', new Date());
+  gtag('config', '{GA_ID}');
+</script>""" if GA_ID else ""
+
 def head(title, desc, canonical, depth, jsonld=None):
     root = "../" * depth
     ld = f'\n<script type="application/ld+json">{json.dumps(jsonld, ensure_ascii=False)}</script>' if jsonld else ""
@@ -182,7 +195,7 @@ def head(title, desc, canonical, depth, jsonld=None):
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">{GA_JS}
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <link rel="canonical" href="{canonical}">
