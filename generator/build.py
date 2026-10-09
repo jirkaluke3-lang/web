@@ -62,6 +62,9 @@ def load_projects(csvname, folder):
             "seo": (r.get("seo_popis_cz") or "").strip(),
             "slozka": (r.get("slozka_obrazu") or slug).strip(),
             "foto": (r.get("autor_fotografii") or "").strip(),
+            # spolupráce - název sloupce s diakritikou i bez, velikost písmen nevadí
+            "spoluprace": next((str(v).strip() for k, v in r.items()
+                                if k.lower() in ("spoluprace", "spolupráce") and str(v).strip()), ""),
             "poradi": r.get("poradi") or "999",
             "images": gather_images(folder, (r.get("slozka_obrazu") or slug).strip()),
         })
@@ -281,8 +284,11 @@ def detail_block(p, root, is_ink=False, is_main=False):
     tag = "h1" if is_main else "h2"
     eyebrow = '<p class="meta ink-eyebrow">INKUBÁTOR</p>' if is_ink else ""
     params = [("Místo", p["lokalita"]), ("Typ", p["typ"]), ("Fáze", p["faze"]),
-              ("Charakter", p["charakter"]), ("Rok", p["rok"]), ("Foto", p["foto"])]
-    phtml = "".join(f'<div><div class="k">{e(k)}</div><div>{e(v)}</div></div>'
+              ("Charakter", p["charakter"]),
+              ("Spolupráce", p.get("spoluprace", "")), ("Foto", p["foto"])]
+    # Rok se v parametrech detailu záměrně nezobrazuje (zůstává jen na kartě v přehledu)
+    # více jmen v jedné buňce: každé na nový řádek (Alt+Enter v tabulce) nebo <br>
+    phtml = "".join(f'<div><div class="k">{e(k)}</div><div>{ebr(v).replace(chr(10), "<br>")}</div></div>'
                     for k, v in params if v)
     return f"""<article class="proj" id="proj-{e(p['slug'])}">
   {eyebrow}<div class="detail-head"><{tag} class="h-page display">{e(p['nazev'])}</{tag}></div>
