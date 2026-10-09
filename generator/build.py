@@ -273,14 +273,19 @@ def gallery_html(p, root):
             parts.append(f'<div class="weave"><p class="body-t">{e(txt)}</p></div>')
     return '<div class="gal">' + "".join(parts) + "</div>"
 
-def detail_block(p, root, is_ink=False):
+def detail_block(p, root, is_ink=False, is_main=False):
+    # is_main=True jen pro první (rozkliknutý) projekt na stránce - ten odpovídá
+    # kanonické URL, a proto má jediné <h1>. Ostatní projekty zobrazené pod ním
+    # (rotace zbytku skupiny + druhá skupina) jsou podřazené <h2>, aby na stránce
+    # bylo vždy přesně jedno <h1>.
+    tag = "h1" if is_main else "h2"
     eyebrow = '<p class="meta ink-eyebrow">INKUBÁTOR</p>' if is_ink else ""
     params = [("Místo", p["lokalita"]), ("Typ", p["typ"]), ("Fáze", p["faze"]),
               ("Charakter", p["charakter"]), ("Rok", p["rok"]), ("Foto", p["foto"])]
     phtml = "".join(f'<div><div class="k">{e(k)}</div><div>{e(v)}</div></div>'
                     for k, v in params if v)
     return f"""<article class="proj" id="proj-{e(p['slug'])}">
-  {eyebrow}<div class="detail-head"><h2 class="h-page display">{e(p['nazev'])}</h2></div>
+  {eyebrow}<div class="detail-head"><{tag} class="h-page display">{e(p['nazev'])}</{tag}></div>
   <div class="params meta">{phtml}</div>
   <p class="body-t">{e(p['anotace'])}</p>
   {gallery_html(p, root)}
@@ -316,7 +321,7 @@ def page_vstup(cfg, backs):
     return head(name, cfg.get("medailon","")[:155], DOMENA+"/", 0) + f"""
 <section id="vstup" title="Klikněte pro další obraz">
   <div class="bg" id="bg"></div>
-  <a class="brand display" href="projekty/" id="brandLink">{brand}</a>
+  <h1><a class="brand display" href="projekty/" id="brandLink">{brand}</a></h1>
   <p class="filename display" id="fname"></p>
   <div class="corner">{intro_html}</div>
   <a class="kontakt-bod" href="kontakt/" aria-label="Kontakt" title="Kontakt"><span></span></a>
@@ -483,7 +488,7 @@ document.addEventListener('keydown',function(ev){{
 def page_rozcestnik(cfg):
     return head("IN—FORM—ARCHITEKTI", cfg.get("medailon","")[:155], DOMENA+"/rozcestnik/", 1) + f"""
 <section id="rozcestnik">
-  <a class="brand-s display" href="../">{brand_html()}</a>
+  <h1><a class="brand-s display" href="../">{brand_html()}</a></h1>
   <nav>
     <a class="display" href="../onas/"><span class="pre">—</span>O NÁS</a>
     <a class="display" href="../projekty/"><span class="pre">—</span>PROJEKTY</a>
@@ -515,6 +520,7 @@ def page_projekty(cfg, projekty):
     </div>""" if medailon else ""
     body = f"""{bar("projekty",1)}
 <div class="page">
+  <h1 class="vh">Projekty</h1>
   {med}
   <div class="grid">{cards}</div>
 </div>"""
@@ -533,7 +539,9 @@ def page_stream(item, projekty, inkubator, group):
         idx = [x["slug"] for x in projekty].index(item["slug"])
         order = [(x, False) for x in projekty[idx:] + projekty[:idx]] + [(x, True) for x in inkubator]
         back = ("../../projekty/", "← všechny projekty")
-    blocks = '<hr class="proj-sep">'.join(detail_block(x, root, is_ink) for x, is_ink in order)
+    blocks = '<hr class="proj-sep">'.join(
+        detail_block(x, root, is_ink, is_main=(idx == 0))
+        for idx, (x, is_ink) in enumerate(order))
     body = f"""{bar("inkubator" if group=="i" else "projekty",2)}
 <div class="page">
   <a class="back meta" href="{back[0]}">{back[1]}</a>
@@ -566,7 +574,7 @@ def page_inkubator(cfg, inkubator, inkubator_news):
         inner = news_feed_html(inkubator_news, "../")
     body = f"""{bar("inkubator",1)}
 <div class="page">
-  <h2 class="h-page display">Inkubátor</h2>
+  <h1 class="h-page display">Inkubátor</h1>
   {intro}
   {inner}
 </div>"""
@@ -578,7 +586,7 @@ def page_text(cfg, active, title, key, fallback=""):
     txt = cfg.get(key, fallback)
     paras = "".join(f"<p>{e(l)}</p>" for l in txt.split("\n") if l.strip())
     body = f"""{bar(active,1)}
-<div class="page"><h2 class="h-page display">{e(title)}</h2><div class="stack body-t">{paras}</div></div>"""
+<div class="page"><h1 class="h-page display">{e(title)}</h1><div class="stack body-t">{paras}</div></div>"""
     return head(f"{title} — IN—FORM—ARCHITEKTI", txt[:155] or title, f"{DOMENA}/{active}/", 1) + body + FOOT
 
 def page_kontakt(cfg):
