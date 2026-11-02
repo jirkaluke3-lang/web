@@ -657,6 +657,8 @@ def main():
     # kopie statiky
     shutil.copytree(ROOT / "fonty", OUT / "fonty")
     if IMG.exists(): shutil.copytree(IMG, OUT / "obrazky", dirs_exist_ok=True)
+    # zapisy z kontrolnich dnu (rozcestnik do aplikace v Apps Scriptu) -> informarchitekti.cz/kd/
+    if (ROOT / "kd").exists(): shutil.copytree(ROOT / "kd", OUT / "kd")
     write(["sitemap.xml"], sitemap(projekty, inkubator))
     write(["robots.txt"], f"User-agent: *\nAllow: /\nSitemap: {DOMENA}/sitemap.xml\n")
     (OUT / ".nojekyll").write_text("")
