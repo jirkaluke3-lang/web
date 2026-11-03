@@ -1,39 +1,454 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
+<base target="_top">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Klientská zóna – IN—FORM—ARCHITEKTI</title>
-<link rel="icon" href="../favicon.svg">
-<link rel="stylesheet" href="../fonty/fonty.css">
 <meta name="robots" content="noindex">
+<link rel="icon" href="../favicon.svg">
 <script src="config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-html,body{margin:0;height:100%;background:#fff}
-body{display:flex;flex-direction:column;font-family:'Ciutadella',system-ui,sans-serif}
-.pruh{display:flex;align-items:center;gap:14px;height:40px;padding:0 16px;background:#FFD400;color:#000;flex:none}
-.pruh a{color:inherit;text-decoration:none;font-weight:600;font-size:17px;letter-spacing:-.01em}
-.pruh a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
-.pruh span{font-size:15px}
-.pruh i{width:14px;height:14px;background:#000;border-radius:50%}
-iframe{flex:1;width:100%;border:0;display:block}
-.chyba{padding:24px 16px;max-width:36em;font-size:17px;line-height:1.5}
+:root{--ink:#16181A;--ink2:#4A4F55;--mut:#6B7178;--line:#D8D6CF;--line2:#E8E6E0;--bg:#F7F6F2;--card:#FFFFFF;
+  --red:#B42318;--amber:#A35A08;--green:#2E7D4F;--sel:#ECEAE4;--bar:#C9C6BE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 24px 80px}
+h1{font-size:28px;margin:0;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 12px;font-weight:600;color:var(--ink2)}
+.mut{color:var(--mut)}.mono{font-family:'IBM Plex Mono',monospace}
+.lnk{background:none;border:0;padding:0;text-decoration:underline;text-underline-offset:3px}
+.btn{min-height:40px;padding:8px 16px;border:1px solid var(--ink);background:var(--card);border-radius:0}
+.btn:hover{background:var(--sel)}.btn.p{background:var(--ink);color:#fff}
+input[type=text],input[type=email],input[type=password],select{border:1px solid #B9B6AE;background:#fff;padding:8px 10px;min-height:40px;border-radius:0;width:100%}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink2)}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+.kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.tabs{display:flex;gap:24px;border-bottom:1px solid var(--line);margin-bottom:24px;overflow-x:auto}
+.tabs button{background:none;border:0;padding:14px 0 12px;border-bottom:2px solid transparent;color:var(--ink2);white-space:nowrap}
+.tabs button.on{border-bottom-color:var(--ink);color:var(--ink);font-weight:600}
+.kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ink);border-bottom:1px solid var(--line);margin-bottom:32px}
+.kpi div{padding:16px 16px 14px 0}
+.kpi b{display:block;font-size:34px;font-weight:500;line-height:1.1;letter-spacing:-.01em}
+.kpi span{font-size:13px;color:var(--ink2)}
+.kpi .red b{color:var(--red)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;margin-bottom:36px}
+.sec{margin-bottom:36px}
+.cas{position:relative;height:8px;background:var(--line2);margin:10px 0 6px}
+.cas i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+.cas .dnes{position:absolute;top:-6px;width:2px;height:20px;background:var(--red)}
+.osa{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2)}
+.odd{display:grid;grid-template-columns:minmax(0,1fr) 140px 48px;gap:12px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line2);font-size:14px}
+.pb{height:6px;background:var(--line2);position:relative}.pb i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+.r{text-align:right}
+.lst{border-top:1px solid var(--ink)}
+.li{display:grid;grid-template-columns:110px minmax(0,1fr) 170px;gap:16px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:14px;align-items:baseline}
+.li .k{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink2)}
+.late{color:var(--red)}
+.st{display:inline-block;font-size:11px;font-weight:600;padding:0 5px;margin:3px 4px 0 0;border:1px solid #9A9EA3;color:var(--ink2);letter-spacing:.02em;white-space:nowrap}
+.st.rf{border:1.5px solid var(--red);color:var(--red)}.st.sp{border-color:var(--green);color:var(--green)}.st.zp{border-color:var(--red);color:var(--red)}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:0 0 16px}
+.bar .grow{flex:1 1 220px}.bar select{width:auto}
+.bod{border-bottom:1px solid var(--line2)}
+.bodh{display:grid;grid-template-columns:70px minmax(0,1fr) 120px 60px;gap:16px;padding:12px 0;align-items:baseline;width:100%;background:none;border:0;text-align:left}
+.bodh:hover{background:var(--sel)}
+.bodh .zn{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink2)}
+.bodh .nm{font-weight:600}
+.det{padding:4px 0 16px 86px}
+.poz{display:grid;grid-template-columns:170px minmax(0,1fr) 190px;gap:14px;padding:8px 0;border-top:1px dotted var(--line2);font-size:14px}
+.poz .k{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink2);line-height:1.5}
+.poz .typ{display:block;font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.06em;color:var(--ink)}
+.poz .sd{font-size:13.5px;color:var(--ink2)}
+.poz.sch .t{font-style:italic;color:var(--ink2)}
+.dpl{display:block;margin-top:4px}.dpl .kdl{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink2)}
+.del{text-decoration:line-through;color:var(--mut)}
+.kd{display:grid;grid-template-columns:120px minmax(0,1fr) 170px;gap:20px;padding:16px 0;border-bottom:1px solid var(--line2);align-items:start}
+.kd .c{font-weight:600}.kd .pr{white-space:pre-line}
+.kon{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.kon .r1{font-weight:600;margin-top:6px}
+.empty{padding:28px 0;color:var(--mut)}
+.box{max-width:420px;margin:12vh auto 0;display:flex;flex-direction:column;gap:14px;background:#fff;border:1px solid var(--ink);padding:28px}
+.row{display:flex;justify-content:space-between;gap:16px;padding:14px 4px;border-bottom:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left}
+.row:hover{background:var(--sel)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;max-width:90%;z-index:20;display:none}
+.toast.err{background:var(--red)}
+.busy{position:fixed;inset:0;background:rgba(247,246,242,.6);display:none;align-items:center;justify-content:center;z-index:15;font-weight:600}
+.vyk{position:fixed;inset:0;background:var(--bg);z-index:12;flex-direction:column}
+.vyk .vh{display:flex;gap:12px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--ink)}
+.vyk .vb{flex:1;overflow:auto;padding:16px}
+.plan{position:relative;display:inline-block;max-width:100%}.plan img{display:block;max-width:100%;height:auto;border:1px solid var(--line)}
+.pin{position:absolute;transform:translate(-50%,-100%);background:#9A9EA3;color:#fff;font:600 11px 'IBM Plex Mono',monospace;padding:2px 5px;white-space:nowrap}
+.pin.akt{background:var(--ink);outline:3px solid #F2C94C}
+.osa{flex-wrap:wrap;gap:4px 12px}
+svg text{font-family:'IBM Plex Sans',system-ui,sans-serif}
+.leg{display:flex;gap:16px;font-size:12.5px;color:var(--ink2);margin-top:6px}.leg i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+@media (max-width:860px){.kpi{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.kon{grid-template-columns:1fr}
+  .li,.poz,.kd{grid-template-columns:1fr;gap:4px}.det{padding-left:0}.bodh{grid-template-columns:60px minmax(0,1fr) 50px}.bodh .x{display:none}}
 </style>
 </head>
 <body>
-<div class="pruh"><i aria-hidden="true"></i><a href="./">projektové řízení</a><span>Klientská zóna</span></div>
+<div id="app" class="wrap"></div>
+<div id="busy" class="busy">Na&#269;&#237;t&#225;m&#8230;</div>
+<div id="toast" class="toast" role="status"></div>
+<div id="vyk" class="vyk" style="display:none"></div>
 <script>
 (function () {
-  var url = window.APP_URL || '';
-  if (!/^https:\/\/script\.google\.com\//.test(url) || /VASE-ID/.test(url)) {
-    document.body.insertAdjacentHTML('beforeend', '<p class="chyba">Adresa aplikace zatím není nastavená. Vložte ji do souboru config.js v repozitáři.</p>');
-    return;
+'use strict';
+var S = { token: null, zakazky: [], D: null, tab: 'prehled', f: { oddil: '', stav: 'otevrene', firma: '', q: '' }, otevreny: {} };
+var $app = document.getElementById('app');
+function ss(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { return null; } }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+function dnes() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function dmr(iso) { var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? +m[3] + '.' + +m[2] + '.' + m[1] : ''; }
+function kdc(v) { var m = String(v || '').match(/(\d+)/); return m ? parseInt(m[1], 10) : 0; }
+function ids(s) { return String(s == null ? '' : s).split(',').map(function (x) { return x.trim(); }).filter(Boolean); }
+function toast(t, err) { var el = document.getElementById('toast'); el.textContent = t; el.className = 'toast' + (err ? ' err' : ''); el.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(function () { el.style.display = 'none'; }, err ? 7000 : 3000); }
+function busy(on) { document.getElementById('busy').style.display = on ? 'flex' : 'none'; }
+// Na webu (informarchitekti.cz) se aplikace vola jako datova sluzba pres doPost ve Web.gs;
+// uvnitr Apps Scriptu pres google.script.run.
+var NA_WEBU = !!window.APP_URL && !(window.google && google.script && google.script.run);
+function volatSluzbu(fn, args) {
+  return fetch(window.APP_URL, { method: 'POST', body: JSON.stringify({ fn: fn, args: args }), credentials: 'omit',
+      redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' } })
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      var o;
+      try { o = JSON.parse(t); } catch (e) {
+        var x = new Error('Služba aplikace neodpověděla. Zkuste to za chvíli znovu.'); x.ramec = true; throw x;
+      }
+      if (o.err) throw new Error(o.err);
+      return o.ok;
+    }, function () { throw new Error('Bez spojení se službou aplikace. Zkontrolujte připojení k internetu.'); });
+}
+function server(fn) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  if (NA_WEBU) return volatSluzbu(fn, args);
+  return new Promise(function (res, rej) {
+    google.script.run.withSuccessHandler(res).withFailureHandler(function (e) { rej(e); })[fn].apply(null, args);
+  });
+}
+function api(akce, data) {
+  busy(true);
+  return server('zonaApi', S.token, akce, data).then(function (r) { busy(false); return r; }, function (e) {
+    busy(false); var m = (e && e.message) || String(e);
+    if (m.indexOf('PRIHLASENI') >= 0) { S.token = null; ss('zona_token', null); toast('P\u0159ihl\u00e1\u0161en\u00ed vypr\u0161elo.', true); login(); }
+    else toast(m.replace(/^Error:\s*/, ''), true);
+    throw e;
+  });
+}
+
+/* ---------- data ---------- */
+function idx() {
+  var D = S.D, t = dnes();
+  D.lideById = {}; D.lide.forEach(function (l) { D.lideById[l['ID']] = l; });
+  D.jById = {}; D.jednani.forEach(function (j) { D.jById[j['ID']] = j; });
+  D.oddNazev = {}; D.oddily.forEach(function (o) { D.oddNazev[+o['\u010c\u00edslo']] = o['N\u00e1zev']; });
+  D.zByBod = {}; D.dopl = {};
+  D.zaznamy.forEach(function (z) {
+    var j = D.jById[z['Jedn\u00e1n\u00ed']] || {};
+    z._datum = j['Datum'] || z['Datum'] || '';
+    z._jedn = j['Typ'] === 'KD' ? 'KD' + pad(kdc(j['\u010c\u00edslo'])) : String(j['\u010c\u00edslo'] || '');
+    // doplnek starsi poznamky: zobrazi se pod ni
+    if (z['Dopl\u0148uje']) { (D.dopl[z['Dopl\u0148uje']] = D.dopl[z['Dopl\u0148uje']] || []).push(z); return; }
+    z._ukol = z['Typ'] === '\u00fakol';
+    z._ok = z._ukol && z['Vy\u0159e\u0161eno'] === 'ano';
+    z._pozde = z._ukol && !z._ok && z['Term\u00edn'] && String(z['Term\u00edn']) < t;
+    (D.zByBod[z['Bod']] = D.zByBod[z['Bod']] || []).push(z);
+  });
+  Object.keys(D.zByBod).forEach(function (k) { D.zByBod[k].sort(function (a, b) { return a._datum < b._datum ? -1 : a._datum > b._datum ? 1 : String(a['Zna\u010dka']) < String(b['Zna\u010dka']) ? -1 : 1; }); });
+  D.body.forEach(function (b) {
+    var u = (D.zByBod[b['ID']] || []).filter(function (z) { return z._ukol && z['Vrstva'] === 'KD'; });
+    var ok = u.filter(function (z) { return z._ok; }).length;
+    b._ukoly = u.length; b._ok = ok;
+    b._zruseno = !!b['Zru\u0161eno KD'];
+    b._pct = u.length ? Math.round(ok / u.length * 100) : null;
+    b._hotovo = (u.length > 0 && ok === u.length) || b._zruseno;
+    b._pozde = !b._zruseno && u.some(function (z) { return z._pozde; });
+    b._firmy = [];
+    u.forEach(function (z) { if (!z._ok) ids(z['\u0158e\u0161itel\u00e9']).forEach(function (id) { var f = (D.lideById[id] || {})['Firma']; if (f && b._firmy.indexOf(f) < 0) b._firmy.push(f); }); });
+  });
+  D.kd = D.jednani.filter(function (j) { return j['Typ'] === 'KD'; }).sort(function (a, b) { return kdc(a['\u010c\u00edslo']) - kdc(b['\u010c\u00edslo']); });
+  var zruseneBody = {}; D.body.forEach(function (b) { if (b._zruseno) zruseneBody[b['ID']] = true; });
+  // ukoly zrusenych bodu se do prehledu a terminu nepocitaji
+  D.ukoly = D.zaznamy.filter(function (z) { return z._ukol && z['Vrstva'] === 'KD' && !z['Dopl\u0148uje'] && !zruseneBody[z['Bod']]; });
+}
+function jmeno(id) { var l = S.D.lideById[id]; return l ? ((l['Jm\u00e9no'] ? String(l['Jm\u00e9no']).charAt(0) + '. ' : '') + (l['P\u0159\u00edjmen\u00ed'] || '')) : ''; }
+function resitel(id) { var l = S.D.lideById[id] || {}; return jmeno(id) + (l['Role'] ? ' / ' + l['Role'] : ''); }
+
+/* ---------- obrazovky ---------- */
+function login() {
+  $app.innerHTML = '<form class="box" id="fl"><div class="kicker">Klientsk\u00e1 z\u00f3na</div><h1>P\u0159ehled stavby</h1>' +
+    '<label class="f">E-mail<input type="email" name="email" autocomplete="username" required value="' + esc(ss('zona_email') || '') + '"></label>' +
+    '<label class="f">PIN<input type="password" name="pin" inputmode="numeric" autocomplete="current-password" required></label>' +
+    '<button class="btn p" type="submit">P\u0159ihl\u00e1sit</button><p class="mut" style="margin:0;font-size:13px">P\u0159\u00edstup p\u0159id\u011bluje spr\u00e1vce zak\u00e1zky.</p></form>';
+  document.getElementById('fl').onsubmit = function (ev) {
+    ev.preventDefault(); var fd = new FormData(ev.target); busy(true);
+    server('prihlasit', fd.get('email'), fd.get('pin')).then(function (r) {
+      busy(false); S.token = r.token; ss('zona_token', r.token); ss('zona_email', r.email); zakazky();
+    }, function (e) { busy(false); toast(((e && e.message) || String(e)).replace(/^Error:\s*/, ''), true); });
+  };
+}
+function zakazky() {
+  api('zakazky').then(function (z) {
+    S.zakazky = z;
+    if (z.length === 1) return otevrit(z[0].id);
+    $app.innerHTML = '<div class="top"><div><div class="kicker">Klientsk\u00e1 z\u00f3na</div><h1>Va\u0161e zak\u00e1zky</h1></div><button class="lnk" id="odhl">Odhl\u00e1sit</button></div>' +
+      (z.map(function (x) { return '<button class="row" data-id="' + esc(x.id) + '"><b>' + esc(x.nazev) + '</b><span class="mut">otev\u0159\u00edt</span></button>'; }).join('') ||
+       '<p class="empty">Nem\u00e1te p\u0159\u00edstup k \u017e\u00e1dn\u00e9 zak\u00e1zce.</p>');
+    $app.querySelectorAll('[data-id]').forEach(function (b) { b.onclick = function () { otevrit(b.dataset.id); }; });
+    document.getElementById('odhl').onclick = odhlasit;
+  });
+}
+function odhlasit() { S.token = null; ss('zona_token', null); login(); }
+function otevrit(id) { api('nacist', { zakazkaId: id }).then(function (D) { S.D = D; idx(); render(); }); }
+
+function render() {
+  var D = S.D, posl = D.kd[D.kd.length - 1];
+  var tabs = [['prehled', 'P\u0159ehled'], ['body', 'Body'], ['ukoly', 'Moje \u00fakoly'], ['zapisy', 'Z\u00e1pisy'], ['kontakty', 'Kontakty']];
+  if (D.ja.prava.ceny) tabs.splice(4, 0, ['faktury', 'Faktury']);
+  if (D.zl.length) tabs.splice(4, 0, ['zl', 'Zm\u011bnov\u00e9 listy']);
+  var h = '<div class="top"><div><div class="kicker">Klientsk\u00e1 z\u00f3na</div><h1>' + esc(D.nastaveni.akce) + '</h1>' +
+    '<div class="mut">' + (posl ? 'Posledn\u00ed kontroln\u00ed den ' + kdc(posl['\u010c\u00edslo']) + ' \u00b7 ' + dmr(posl['Datum']) : 'Zat\u00edm \u017e\u00e1dn\u00fd vydan\u00fd z\u00e1pis') +
+    (posl && posl['Dal\u0161\u00ed KD'] ? ' \u00b7 dal\u0161\u00ed KD ' + dmr(posl['Dal\u0161\u00ed KD']) + (posl['Dal\u0161\u00ed KD \u010das'] ? ' v ' + esc(posl['Dal\u0161\u00ed KD \u010das']) : '') : '') + '</div></div>' +
+    '<div style="display:flex;gap:16px;align-items:center"><span class="mut">' + esc(D.ja.jmeno) + (D.ja.firma ? ' \u00b7 ' + esc(D.ja.firma) : '') + '</span>' +
+    (S.zakazky.length > 1 ? '<button class="lnk" id="zpet">Jin\u00e1 zak\u00e1zka</button>' : '') + '<button class="lnk" id="odhl">Odhl\u00e1sit</button></div></div>' +
+    '<div class="tabs">' + tabs.map(function (t) { return '<button data-tab="' + t[0] + '"' + (S.tab === t[0] ? ' class="on"' : '') + '>' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div id="obsah"></div>';
+  $app.innerHTML = h;
+  $app.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { S.tab = b.dataset.tab; render(); }; });
+  document.getElementById('odhl').onclick = odhlasit;
+  var z = document.getElementById('zpet'); if (z) z.onclick = zakazky;
+  ({ prehled: prehled, body: body, ukoly: mojeUkoly, zapisy: zapisy, zl: zmenoveListy, faktury: faktury, kontakty: kontakty })[S.tab]();
+}
+
+function prehled() {
+  var D = S.D, t = dnes();
+  var ok = D.ukoly.filter(function (z) { return z._ok; }).length;
+  var pct = D.ukoly.length ? Math.round(ok / D.ukoly.length * 100) : 0;
+  var otevrene = D.body.filter(function (b) { return !b._hotovo && b._ukoly; }).length;
+  var pozde = D.ukoly.filter(function (z) { return z._pozde; }).length;
+  var rf = D.body.filter(function (b) { return b['Priorita'] === 'RED FLAG' && !b._hotovo; });
+  var h = '<div class="kpi"><div><b>' + pct + ' %</b><span>spln\u011bn\u00fdch \u00fakol\u016f (' + ok + ' z ' + D.ukoly.length + ')</span></div>' +
+    '<div><b>' + otevrene + '</b><span>otev\u0159en\u00fdch bod\u016f</span></div>' +
+    '<div class="' + (pozde ? 'red' : '') + '"><b>' + pozde + '</b><span>\u00fakol\u016f po term\u00ednu</span></div>' +
+    '<div class="' + (rf.length ? 'red' : '') + '"><b>' + rf.length + '</b><span>red flag \u2013 vy\u017eaduje \u0159e\u0161en\u00ed</span></div></div>';
+  // cas realizace
+  var zac = D.nastaveni.datum_zahajeni, kon = D.nastaveni.smluvni_termin;
+  var casH = '';
+  if (zac && kon) {
+    var celk = new Date(kon) - new Date(zac), ub = new Date(t) - new Date(zac);
+    var p = Math.max(0, Math.min(100, Math.round(ub / celk * 100)));
+    casH = '<div class="sec"><h2>Doba realizace</h2><div class="cas"><i style="width:' + p + '%"></i></div>' +
+      '<div class="osa"><span>zah\u00e1jen\u00ed ' + dmr(zac) + '</span><span>uplynulo ' + p + ' %</span><span>smluvn\u00ed dokon\u010den\u00ed ' + dmr(kon) + '</span></div></div>';
   }
-  var f = document.createElement('iframe');
-  f.title = 'Klientská zóna';
-  f.allow = 'camera; clipboard-write; fullscreen';
-  f.src = url + '?zona=1';
-  document.body.appendChild(f);
+  // vyvoj po KD
+  var vyvoj = D.kd.map(function (j) {
+    var n = kdc(j['\u010c\u00edslo']);
+    var u = D.ukoly.filter(function (z) { var zj = D.jById[z['Jedn\u00e1n\u00ed']]; return zj && kdc(zj['\u010c\u00edslo']) <= n; });
+    var s = u.filter(function (z) { return z._ok && z['Vy\u0159e\u0161eno dne'] && String(z['Vy\u0159e\u0161eno dne']) <= String(j['Datum']); }).length;
+    return { n: n, celkem: u.length, splneno: s };
+  });
+  var graf = '';
+  if (vyvoj.length) {
+    var W = 540, H = 170, max = Math.max.apply(null, vyvoj.map(function (v) { return v.celkem; }).concat([1]));
+    var bw = Math.min(28, (W - 30) / vyvoj.length - 6);
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + (H + 24) + '" width="100%" role="img" aria-label="\u00dakoly po kontroln\u00edch dnech">';
+    vyvoj.forEach(function (v, i) {
+      var x = 30 + i * ((W - 30) / vyvoj.length), hc = v.celkem / max * H, hs = v.splneno / max * H;
+      svg += '<rect x="' + x + '" y="' + (H - hc) + '" width="' + bw + '" height="' + hc + '" fill="#E8E6E0"/>' +
+        '<rect x="' + x + '" y="' + (H - hs) + '" width="' + bw + '" height="' + hs + '" fill="#16181A"><title>KD ' + v.n + ': spln\u011bno ' + v.splneno + ' z ' + v.celkem + '</title></rect>' +
+        '<text x="' + (x + bw / 2) + '" y="' + (H + 16) + '" font-size="11" fill="#6B7178" text-anchor="middle">' + v.n + '</text>';
+    });
+    svg += '<line x1="30" y1="' + H + '" x2="' + W + '" y2="' + H + '" stroke="#16181A" stroke-width="1"/>' +
+      '<text x="0" y="10" font-size="11" fill="#6B7178">' + max + '</text></svg>';
+    graf = '<div><h2>\u00dakoly podle kontroln\u00edch dn\u016f</h2>' + svg + '<div class="leg"><span><i style="background:#16181A"></i>spln\u011bn\u00e9</span><span><i style="background:#E8E6E0"></i>zadan\u00e9 celkem</span><span>\u010d\u00edslo = KD</span></div></div>';
+  }
+  // plneni po oddilech
+  var oddH = D.oddily.slice().sort(function (a, b) { return (+a['Po\u0159ad\u00ed'] || 0) - (+b['Po\u0159ad\u00ed'] || 0); }).map(function (o) {
+    var bb = D.body.filter(function (b) { return String(b['Odd\u00edl']) === String(o['\u010c\u00edslo']); });
+    var u = 0, s = 0; bb.forEach(function (b) { u += b._ukoly; s += b._ok; });
+    if (!u) return '';
+    var p = Math.round(s / u * 100);
+    return '<div class="odd"><span>' + pad(+o['\u010c\u00edslo']) + ' \u00b7 ' + esc(o['N\u00e1zev']) + '</span><span class="pb"><i style="width:' + p + '%"></i></span><span class="r">' + p + ' %</span></div>';
+  }).join('');
+  h += casH + '<div class="grid2">' + graf + '<div><h2>Pln\u011bn\u00ed podle odd\u00edl\u016f</h2>' + (oddH || '<p class="mut">Zat\u00edm bez \u00fakol\u016f.</p>') + '</div></div>';
+  if (rf.length) {
+    h += '<div class="sec"><h2 style="color:var(--red)">Red flag</h2><div class="lst">' + rf.map(function (b) {
+      return '<div class="li"><span class="k">' + esc(b['Zna\u010dka']) + '</span><span><b>' + esc(b['N\u00e1zev']) + '</b><br>' + esc(b['Red flag \u2013 d\u016fvod']) + '</span><span>' + (b['Red flag \u2013 term\u00edn'] ? 'do ' + dmr(b['Red flag \u2013 term\u00edn']) : '') + '</span></div>';
+    }).join('') + '</div></div>';
+  }
+  var bliz = D.ukoly.filter(function (z) { return !z._ok && z['Term\u00edn']; }).sort(function (a, b) { return a['Term\u00edn'] < b['Term\u00edn'] ? -1 : 1; }).slice(0, 8);
+  if (bliz.length) {
+    h += '<div class="sec"><h2>Nejbli\u017e\u0161\u00ed term\u00edny</h2><div class="lst">' + bliz.map(radekUkolu).join('') + '</div></div>';
+  }
+  var posl = D.kd[D.kd.length - 1];
+  if (posl && posl['P\u0159edm\u011bt']) h += '<div class="sec"><h2>P\u0159edm\u011bt posledn\u00edho KD</h2><p class="kd pr" style="display:block;border:0;padding:0;white-space:pre-line">' + esc(posl['P\u0159edm\u011bt']) + '</p></div>';
+  document.getElementById('obsah').innerHTML = h;
+}
+function radekUkolu(z) {
+  var b = S.D.body.filter(function (x) { return x['ID'] === z['Bod']; })[0] || {};
+  return '<div class="li"><span class="k">' + esc(z['Zna\u010dka']) + '</span><span><span class="mut">' + esc(b['Zna\u010dka'] + ' ' + (b['N\u00e1zev'] || '')) + '</span><br>' + esc(z['Text']) + '</span>' +
+    '<span' + (z._pozde ? ' class="late"' : '') + '>' + dmr(z['Term\u00edn']) + '<br><span class="mut">' + esc(ids(z['\u0158e\u0161itel\u00e9']).map(resitel).join(', ')) + '</span></span></div>';
+}
+
+function body() {
+  var D = S.D, f = S.f, q = f.q.trim().toLowerCase();
+  var firmy = []; D.lide.forEach(function (l) { if (l['Firma'] && firmy.indexOf(l['Firma']) < 0) firmy.push(l['Firma']); });
+  var h = '<div class="bar"><input class="grow" type="text" id="q" placeholder="Hledat n\u00e1zev, \u010d\u00edslo nebo text\u2026" value="' + esc(f.q) + '">' +
+    '<select id="fo"><option value="">V\u0161echny odd\u00edly</option>' + D.oddily.map(function (o) { return '<option value="' + esc(o['\u010c\u00edslo']) + '"' + (String(f.oddil) === String(o['\u010c\u00edslo']) ? ' selected' : '') + '>' + pad(+o['\u010c\u00edslo']) + ' \u00b7 ' + esc(o['N\u00e1zev']) + '</option>'; }).join('') + '</select>' +
+    '<select id="fs"><option value="otevrene"' + (f.stav === 'otevrene' ? ' selected' : '') + '>Otev\u0159en\u00e9</option><option value="pozde"' + (f.stav === 'pozde' ? ' selected' : '') + '>Po term\u00ednu</option><option value="splnene"' + (f.stav === 'splnene' ? ' selected' : '') + '>Spln\u011bn\u00e9</option><option value=""' + (!f.stav ? ' selected' : '') + '>V\u0161echny</option></select>' +
+    '<select id="ff"><option value="">V\u0161echny firmy</option>' + firmy.map(function (x) { return '<option' + (f.firma === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>';
+  var vyber = D.body.filter(function (b) {
+    if (f.oddil && String(b['Odd\u00edl']) !== String(f.oddil)) return false;
+    if (f.stav === 'otevrene' && b._hotovo) return false;
+    if (f.stav === 'splnene' && !b._hotovo) return false;
+    if (f.stav === 'pozde' && !b._pozde) return false;
+    if (f.firma && b._firmy.indexOf(f.firma) < 0) return false;
+    if (q) { var t = (b['Zna\u010dka'] + ' ' + b['N\u00e1zev'] + ' ' + (D.zByBod[b['ID']] || []).map(function (z) { return z['Text'] + ' ' + (D.dopl[z['ID']] || []).map(function (x) { return x['Text']; }).join(' '); }).join(' ')).toLowerCase(); if (t.indexOf(q) < 0) return false; }
+    return true;
+  }).sort(function (a, b) { return (+a['Odd\u00edl'] - +b['Odd\u00edl']) || ((+a['Po\u0159ad\u00ed'] || 0) - (+b['Po\u0159ad\u00ed'] || 0)); });
+  var odd = null;
+  h += vyber.map(function (b) {
+    var s = '';
+    if (+b['Odd\u00edl'] !== odd) { odd = +b['Odd\u00edl']; s += '<h2 style="margin:22px 0 0;padding-bottom:8px;border-bottom:1.5px solid var(--ink);color:var(--ink)">' + pad(odd) + ' \u00b7 ' + esc(D.oddNazev[odd] || '') + '</h2>'; }
+    var st = [];
+    if (b['Priorita'] === 'RED FLAG' && !b._hotovo) st.push('<span class="st rf">RED FLAG</span>');
+    if (b._pozde) st.push('<span class="st zp">po term\u00ednu</span>');
+    if (b._zruseno) st.push('<span class="st">zru\u0161eno KD ' + pad(b['Zru\u0161eno KD']) + '</span>');
+    else if (b._hotovo) st.push('<span class="st sp">spln\u011bno</span>');
+    s += '<div class="bod"><button class="bodh" data-b="' + esc(b['ID']) + '"><span class="zn">' + esc(b['Zna\u010dka']) + '</span><span><span class="nm">' + esc(b['N\u00e1zev']) + '</span><br>' + st.join('') +
+      (b._firmy.length ? '<span class="mut" style="font-size:13px">' + esc(b._firmy.join(', ')) + '</span>' : '') + '</span>' +
+      '<span class="x">' + (b._pct != null ? '<span class="pb" style="display:block;margin-top:9px"><i style="width:' + b._pct + '%"></i></span>' : '') + '</span>' +
+      '<span class="r">' + (b._pct != null ? b._pct + ' %' : '<span class="mut">info</span>') + '</span></button>' +
+      (S.otevreny[b['ID']] ? detail(b) : '') + '</div>';
+    return s;
+  }).join('') || '<p class="empty">\u017d\u00e1dn\u00fd bod neodpov\u00edd\u00e1 filtru.</p>';
+  document.getElementById('obsah').innerHTML = h;
+  var qi = document.getElementById('q');
+  qi.oninput = function () { f.q = qi.value; clearTimeout(body.t); body.t = setTimeout(function () { var p = qi.selectionStart; body(); var n = document.getElementById('q'); n.focus(); n.setSelectionRange(p, p); }, 250); };
+  document.getElementById('fo').onchange = function (e) { f.oddil = e.target.value; body(); };
+  document.getElementById('fs').onchange = function (e) { f.stav = e.target.value; body(); };
+  document.getElementById('ff').onchange = function (e) { f.firma = e.target.value; body(); };
+  document.querySelectorAll('[data-b]').forEach(function (x) { x.onclick = function () { S.otevreny[x.dataset.b] = !S.otevreny[x.dataset.b]; body(); }; });
+  document.querySelectorAll('[data-vykbod]').forEach(function (x) { x.onclick = function () { naVykrese(x.dataset.vykbod); }; });
+}
+function detail(b) {
+  var D = S.D;
+  var maPin = b['V\u00fdkres'] && b['Pin X'] !== '' && b['Pin X'] != null;
+  return '<div class="det">' + (maPin ? '<button class="lnk" data-vykbod="' + esc(b['ID']) + '" style="margin:4px 0 8px">Zobrazit na v\u00fdkrese</button>' : '') + (D.zByBod[b['ID']] || []).map(function (z) {
+    var ter = z._ukol && z['Term\u00edn'] ? '\u2014' + (z['P\u016fvodn\u00ed term\u00edn'] && z['P\u016fvodn\u00ed term\u00edn'] !== z['Term\u00edn'] ? '<span class="del">' + dmr(z['P\u016fvodn\u00ed term\u00edn']) + '</span> ' : '') +
+      '<span' + (z._pozde ? ' class="late"' : '') + '>' + dmr(z['Term\u00edn']) + '</span>' : '';
+    var sd = z._ukol ? ids(z['\u0158e\u0161itel\u00e9']).map(function (id) { return esc(resitel(id)); }).join('<br>') + '<br>' + (z._ok ? 'SPLN\u011aNO' + (z['Vy\u0159e\u0161eno dne'] ? '<br>' + dmr(z['Vy\u0159e\u0161eno dne']) : '') : 'TRV\u00c1') : '';
+    return '<div class="poz' + (z['Vrstva'] !== 'KD' ? ' sch' : '') + '"><span class="k"><span class="typ">' + esc(String(z['Typ'] || 'info').toUpperCase()) + '</span>' + esc(z['Zna\u010dka']) + '<br>' + dmr(z._datum) + ter + '</span>' +
+      '<span class="t">' + esc(z['Text']) + (D.dopl[z['ID']] || []).map(function (x) {
+        return '<span class="dpl"><span class="kdl">dopln\u011bno ' + esc(x._jedn) + ' \u00b7 ' + dmr(x._datum) + ':</span> ' + esc(x['Text']) + '</span>';
+      }).join('') + '</span><span class="sd">' + sd + '</span></div>';
+  }).join('') + '</div>';
+}
+
+function naVykrese(bodId) {
+  var D = S.D, b = D.body.filter(function (x) { return x['ID'] === bodId; })[0], el = document.getElementById('vyk');
+  api('vykres', { zakazkaId: D.zakazka.id, id: b['V\u00fdkres'] }).then(function (r) {
+    var piny = D.body.filter(function (x) { return String(x['V\u00fdkres']) === String(b['V\u00fdkres']) && x['Pin X'] !== '' && x['Pin X'] != null; }).map(function (x) {
+      return '<span class="pin' + (x['ID'] === bodId ? ' akt' : '') + '" style="left:' + (+x['Pin X'] * 100) + '%;top:' + (+x['Pin Y'] * 100) + '%">' + esc(x['Zna\u010dka']) + '</span>';
+    }).join('');
+    el.innerHTML = '<div class="vh"><b>' + esc(b['Zna\u010dka'] + ' ' + b['N\u00e1zev']) + '</b><span class="mut">' + esc(r.nazev) + '</span><span style="flex:1"></span><button class="btn" id="vykz">Zav\u0159\u00edt</button></div>' +
+      '<div class="vb"><div class="plan"><img src="data:' + r.mime + ';base64,' + r.data + '" alt="">' + piny + '</div></div>';
+    el.style.display = 'flex';
+    document.getElementById('vykz').onclick = function () { el.style.display = 'none'; };
+  });
+}
+
+function mojeUkoly() {
+  var D = S.D, moji = D.ja.mojiLide;
+  var u = D.ukoly.filter(function (z) { return !z._ok && ids(z['\u0158e\u0161itel\u00e9']).some(function (id) { return moji.indexOf(id) >= 0; }); })
+    .sort(function (a, b) { return String(a['Term\u00edn'] || '9') < String(b['Term\u00edn'] || '9') ? -1 : 1; });
+  document.getElementById('obsah').innerHTML = '<p class="mut" style="margin-top:0">Otev\u0159en\u00e9 \u00fakoly, kde je \u0159e\u0161itelem ' + (D.ja.firma ? 'n\u011bkdo z firmy ' + esc(D.ja.firma) : 'va\u0161e osoba') + '.</p>' +
+    (u.length ? '<div class="lst">' + u.map(radekUkolu).join('') + '</div>' : '<p class="empty">\u017d\u00e1dn\u00e9 otev\u0159en\u00e9 \u00fakoly.</p>');
+}
+
+function zapisy() {
+  var D = S.D;
+  var h = '<div class="lst">' + D.kd.slice().reverse().map(function (j) {
+    return '<div class="kd"><div><div class="c">KD ' + kdc(j['\u010c\u00edslo']) + '</div><div class="mut">' + dmr(j['Datum']) + (j['\u010cas'] ? ' \u00b7 ' + esc(j['\u010cas']) : '') + '</div></div>' +
+      '<div class="pr">' + (j['P\u0159edm\u011bt'] ? esc(j['P\u0159edm\u011bt']) : '<span class="mut">\u2014</span>') + '</div>' +
+      '<div>' + (j['PDF'] ? '<button class="btn" data-pdf="' + esc(j['ID']) + '">St\u00e1hnout PDF</button>' : '<span class="mut">PDF nen\u00ed k dispozici</span>') + '</div></div>';
+  }).join('') + '</div>';
+  document.getElementById('obsah').innerHTML = D.kd.length ? h : '<p class="empty">Zat\u00edm \u017e\u00e1dn\u00fd vydan\u00fd z\u00e1pis.</p>';
+  document.querySelectorAll('[data-pdf]').forEach(function (b) { b.onclick = function () { stahnout('pdf', { zakazkaId: D.zakazka.id, jednaniId: b.dataset.pdf }); }; });
+}
+/** Stahne soubor, ktery server vrati jako base64. */
+function stahnout(akce, data) {
+  api(akce, data).then(function (r) {
+    var bin = atob(r.data), arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    var url = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' }));
+    var a = document.createElement('a'); a.href = url; a.download = r.nazev; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  });
+}
+function kc(v) { return v === '' || v == null || isNaN(+v) ? '' : String(Math.round(+v)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' K\u010d'; }
+
+function faktury() {
+  var D = S.D, t = dnes(), F = (D.faktury || []).slice().sort(function (a, b) { return String(b['Datum vystaven\u00ed']) < String(a['Datum vystaven\u00ed']) ? -1 : 1; });
+  var bez = 0, s = 0, zapl = 0, poSpl = 0;
+  F.forEach(function (f) {
+    var c = +f['\u010c\u00e1stka bez DPH'] || 0, cs = +f['\u010c\u00e1stka s DPH'] || (c + (+f['DPH'] || 0));
+    f._s = cs; bez += c; s += cs;
+    if (f['Zaplaceno dne']) zapl += cs; else if (f['Datum splatnosti'] && String(f['Datum splatnosti']) < t) poSpl += cs;
+  });
+  var cena = +D.nastaveni.smluvni_cena || 0;
+  var h = '<div class="kpi"><div><b>' + kc(bez) + '</b><span>fakturov\u00e1no bez DPH' + (cena ? ' \u00b7 ' + Math.round(bez / cena * 100) + ' % smluvn\u00ed ceny' : '') + '</span></div>' +
+    '<div><b>' + kc(s) + '</b><span>fakturov\u00e1no s DPH</span></div>' +
+    '<div><b>' + kc(zapl) + '</b><span>zaplaceno</span></div>' +
+    '<div class="' + (poSpl ? 'red' : '') + '"><b>' + kc(poSpl) + '</b><span>po splatnosti</span></div></div>';
+  if (cena) {
+    var p = Math.min(100, Math.round(bez / cena * 100));
+    h += '<div class="sec"><h2>\u010cerp\u00e1n\u00ed smluvn\u00ed ceny</h2><div class="cas"><i style="width:' + p + '%"></i></div>' +
+      '<div class="osa"><span>0 K\u010d</span><span>fakturov\u00e1no ' + kc(bez) + '</span><span>smluvn\u00ed cena ' + kc(cena) + ' bez DPH</span></div></div>';
+  }
+  h += F.length ? '<div class="lst">' + F.map(function (f) {
+    var stav = f['Zaplaceno dne'] ? 'zaplaceno ' + dmr(f['Zaplaceno dne']) : (f['Datum splatnosti'] && String(f['Datum splatnosti']) < t ? '<span class="late">po splatnosti</span>' : 'k \u00fahrad\u011b');
+    return '<div class="li" style="grid-template-columns:150px minmax(0,1fr) 220px"><span><span class="k">' + esc(f['\u010c\u00edslo']) + '</span><br><span class="mut">' + dmr(f['Datum vystaven\u00ed']) + '</span></span>' +
+      '<span><b>' + esc(f['P\u0159edm\u011bt'] || '') + '</b><br><span class="mut">' + esc([f['Dodavatel'], f['ZL'] ? 'ZL ' + f['ZL'] : '', f['Pozn\u00e1mka']].filter(Boolean).join(' \u00b7 ')) + '</span>' +
+      (f['PDF'] ? '<br><button class="lnk" data-fa="' + esc(f['\u010c\u00edslo']) + '">st\u00e1hnout PDF</button>' : '') + '</span>' +
+      '<span class="r">' + kc(f['\u010c\u00e1stka bez DPH']) + ' <span class="mut">bez DPH</span><br><span class="mut">' + kc(f._s) + ' s DPH</span><br>' + stav +
+      (f['Datum splatnosti'] && !f['Zaplaceno dne'] ? '<br><span class="mut">splatnost ' + dmr(f['Datum splatnosti']) + '</span>' : '') + '</span></div>';
+  }).join('') + '</div>' : '<p class="empty">Zat\u00edm \u017e\u00e1dn\u00e1 faktura.</p>';
+  document.getElementById('obsah').innerHTML = h;
+  document.querySelectorAll('[data-fa]').forEach(function (b) { b.onclick = function () { stahnout('faktura', { zakazkaId: D.zakazka.id, cislo: b.dataset.fa }); }; });
+}
+
+function zmenoveListy() {
+  var D = S.D;
+  var c = { 'odsouhlasena': 'sp', 'zam\u00edtnuta / zm\u011bn\u011bna': 'zp' };
+  document.getElementById('obsah').innerHTML = '<div class="lst">' + D.zl.map(function (z) {
+    return '<div class="li"><span class="k">' + esc(z['\u010c\u00edslo']) + '</span><span><b>' + esc(z['N\u00e1zev']) + '</b><br><span class="mut">bod ' + esc(z['Bod']) + '</span></span>' +
+      '<span><span class="st ' + (c[z['Stav ceny']] || '') + '">' + esc(z['Stav ceny']) + '</span><br>' + (z['Cena K\u010d'] ? String(Math.round(+z['Cena K\u010d'])).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' K\u010d' : '') + '</span></div>';
+  }).join('') + '</div><p class="mut" style="font-size:13px">Z\u00e1vazn\u00e1 je jen cena odsouhlasen\u00e9ho zm\u011bnov\u00e9ho listu; ostatn\u00ed \u010d\u00e1stky jsou orienta\u010dn\u00ed.</p>';
+}
+
+function kontakty() {
+  var D = S.D, por = {}; D.role.forEach(function (r, i) { por[r['Zkratka']] = i; });
+  var skup = {};
+  D.lide.forEach(function (l) { (skup[l['Role'] || '\u2014'] = skup[l['Role'] || '\u2014'] || []).push(l); });
+  var nazev = {}; D.role.forEach(function (r) { nazev[r['Zkratka']] = r['N\u00e1zev']; });
+  document.getElementById('obsah').innerHTML = '<div class="kon">' + Object.keys(skup).sort(function (a, b) { return (por[a] == null ? 99 : por[a]) - (por[b] == null ? 99 : por[b]); }).map(function (r) {
+    return '<div><h2>' + esc(r + (nazev[r] && nazev[r] !== r ? ' \u2013 ' + nazev[r] : '')) + '</h2>' + skup[r].map(function (l) {
+      return '<div style="margin-bottom:14px"><div class="r1">' + esc((l['Jm\u00e9no'] || '') + ' ' + (l['P\u0159\u00edjmen\u00ed'] || '')) + '</div><div class="mut">' + esc(l['Firma'] || '') + '</div>' +
+        (l['E-mail'] ? '<div><a href="mailto:' + esc(l['E-mail']) + '">' + esc(l['E-mail']) + '</a></div>' : '') + (l['Telefon'] ? '<div>' + esc(l['Telefon']) + '</div>' : '') + '</div>';
+    }).join('') + '</div>';
+  }).join('') + '</div>';
+}
+
+function start() { S.token = ss('zona_token'); if (S.token) zakazky(); else login(); }
+// nova sluzba jeste neni nasazena (stary Web.gs bez doPost) -> docasne puvodni zobrazeni v ramu
+if (NA_WEBU) volatSluzbu('ping', []).then(start, function (e) { if (e && e.ramec) location.replace('zona-ram.html'); else { start(); } });
+else start();
 })();
 </script>
 </body>
