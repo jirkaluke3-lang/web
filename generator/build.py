@@ -611,7 +611,7 @@ def page_kontakt(cfg):
                 DOMENA+"/kontakt/", 1) + body + FOOT
 
 def sitemap(projekty, inkubator):
-    urls = ["/", "/projekty/", "/inkubator/", "/onas/", "/kontakt/", "/jobs/"]
+    urls = ["/", "/projekty/", "/inkubator/", "/onas/", "/kontakt/", "/jobs/", "/projektove-rizeni/"]
     urls += [f"/projekty/{p['slug']}/" for p in projekty]
     urls += [f"/inkubator/{p['slug']}/" for p in inkubator]
     body = "".join(f"<url><loc>{DOMENA}{u}</loc></url>" for u in urls)
@@ -657,8 +657,9 @@ def main():
     # kopie statiky
     shutil.copytree(ROOT / "fonty", OUT / "fonty")
     if IMG.exists(): shutil.copytree(IMG, OUT / "obrazky", dirs_exist_ok=True)
-    # zapisy z kontrolnich dnu (rozcestnik do aplikace v Apps Scriptu) -> informarchitekti.cz/kd/
-    if (ROOT / "kd").exists(): shutil.copytree(ROOT / "kd", OUT / "kd")
+    # projektove rizeni (rozcestnik do aplikace v Apps Scriptu) -> informarchitekti.cz/projektove-rizeni/
+    for slozka in ("projektove-rizeni", "kd"):   # kd/ = presmerovani ze stare adresy
+        if (ROOT / slozka).exists(): shutil.copytree(ROOT / slozka, OUT / slozka)
     write(["sitemap.xml"], sitemap(projekty, inkubator))
     write(["robots.txt"], f"User-agent: *\nAllow: /\nSitemap: {DOMENA}/sitemap.xml\n")
     (OUT / ".nojekyll").write_text("")
