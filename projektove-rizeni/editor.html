@@ -635,6 +635,12 @@ function htmlBod(x, j, lze) {
         '<span class="ter">' + dmr(z['Term\u00edn']) + '</span>';
     }
     var side = '';
+    if (z['Typ'] === 'rozhodnut\u00ed' && ids(z['Rozhodl']).length) {
+      side += '<span class="mut">rozhodl</span>' + ids(z['Rozhodl']).map(function (r) {
+        var l = S.D.lideById[String(r)] || {};
+        return '<span>' + esc(jmeno(r, true) + (l['Role'] ? ' / ' + l['Role'] : '')) + '</span>';
+      }).join('');
+    }
     if (ukol) {
       side += ids(z['\u0158e\u0161itel\u00e9']).map(function (r) {
         var l = S.D.lideById[String(r)] || {};
@@ -704,19 +710,22 @@ function initKrit() {
   function u() { box.classList.toggle('hidden', !c.checked); } c.onchange = u; u();
 }
 /** Prepinac typu poznamky + pole ukolu (termin, resitele). */
-function typHtml(kd, typ, termin, resitele) {
+function typHtml(kd, typ, termin, resitele, rozhodl) {
   var volby = kd ? ['\u00fakol', 'info', 'rozhodnut\u00ed'] : ['\u00fakol', 'info'];
   typ = volby.indexOf(typ) >= 0 ? typ : '\u00fakol';
   return '<input type="hidden" name="typ" value="' + typ + '"><div class="f" style="font-size:13px;color:var(--ink2)">Typ pozn\u00e1mky</div>' +
     '<div class="seg" id="seg">' + volby.map(function (v) { return '<button type="button" data-v="' + v + '"' + (v === typ ? ' class="on"' : '') + '>' + v + '</button>'; }).join('') + '</div>' +
     '<div id="ukolbox"><div class="grid2"><label class="f">Term\u00edn<input type="date" name="termin" value="' + esc(termin || '') + '"></label><div></div></div>' +
     '<div class="f" style="font-size:13px;color:var(--ink2);margin-top:10px">\u0158e\u0161itel\u00e9</div>' + lideCheckboxy('resitele', resitele || []) + '</div>' +
+    (kd ? '<div id="rozhbox"><div class="f" style="font-size:13px;color:var(--ink2)">Rozhodl</div>' + lideCheckboxy('rozhodl', rozhodl || []) + '</div>' : '') +
     '<p class="mut" id="infotxt" style="margin:0;font-size:13px">Info a rozhodnut\u00ed nemaj\u00ed term\u00edn ani \u0159e\u0161itele a do pln\u011bn\u00ed bodu se nepo\u010d\u00edtaj\u00ed.</p>';
 }
 function initTyp() {
   var seg = document.getElementById('seg'), box = document.getElementById('ukolbox'), info = document.getElementById('infotxt');
   if (!seg) return;
-  function u() { var v = dform.querySelector('[name=typ]').value; box.classList.toggle('hidden', v !== '\u00fakol'); info.classList.toggle('hidden', v === '\u00fakol'); }
+  var rb = document.getElementById('rozhbox');
+  function u() { var v = dform.querySelector('[name=typ]').value; box.classList.toggle('hidden', v !== '\u00fakol'); info.classList.toggle('hidden', v === '\u00fakol');
+    if (rb) rb.classList.toggle('hidden', v !== 'rozhodnut\u00ed'); }
   seg.querySelectorAll('button').forEach(function (bt) { bt.onclick = function () {
     seg.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
     bt.classList.add('on'); dform.querySelector('[name=typ]').value = bt.dataset.v; u(); }; });
@@ -725,6 +734,7 @@ function initTyp() {
 function poznamkaData(fd2, kd) {
   var d = { typ: fd2.get('typ'), text: fd2.get('text') };
   if (d.typ === '\u00fakol') { d.termin = fd2.get('termin'); d.resitele = fd2.getAll('resitele'); }
+  d.rozhodl = d.typ === 'rozhodnut\u00ed' ? fd2.getAll('rozhodl') : [];
   if (kd) { d.kriticky = !!fd2.get('kriticky'); d.kc = fd2.get('kc'); d.dny = fd2.get('dny'); }
   return d;
 }
@@ -880,7 +890,7 @@ function dlgPoznamka(zid) {
     '<p class="mut" style="margin:0;font-size:13px">Z\u00e1pis ' + esc(predp(zj)) + ' je koncept \u2013 pozn\u00e1mku lze upravit, p\u0159esunout nebo smazat. Po vyd\u00e1n\u00ed z\u00e1pisu p\u016fjde u \u00fakolu jen posunout term\u00edn.</p>' +
     '<div class="grid2"><label class="f">Odd\u00edl' + oddilSelect(bod['Odd\u00edl']) + '</label>' +
     '<label class="f">Bod<select name="bodId" id="bodsel" required>' + bodyOddilu(bod['Odd\u00edl']) + '</select></label></div>' +
-    typHtml(kd, z['Typ'], z['Term\u00edn'], ids(z['\u0158e\u0161itel\u00e9'])) +
+    typHtml(kd, z['Typ'], z['Term\u00edn'], ids(z['\u0158e\u0161itel\u00e9']), ids(z['Rozhodl'])) +
     (kd ? '<div class="f" style="font-size:13px;color:var(--ink2)">Priorita</div>' + kritHtml(z) : '') +
     paticka('Ulo\u017eit', '<button class="btn red" value="smazat" formnovalidate>Smazat pozn\u00e1mku</button>'), function (fd2, akce) {
     if (akce === 'smazat') {

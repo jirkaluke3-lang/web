@@ -342,7 +342,8 @@ function detail(b) {
   return '<div class="det">' + (maPin ? '<button class="lnk" data-vykbod="' + esc(b['ID']) + '" style="margin:4px 0 8px">Zobrazit na v\u00fdkrese</button>' : '') + (D.zByBod[b['ID']] || []).map(function (z) {
     var ter = z._ukol && z['Term\u00edn'] ? '\u2014' + (z['P\u016fvodn\u00ed term\u00edn'] && z['P\u016fvodn\u00ed term\u00edn'] !== z['Term\u00edn'] ? '<span class="del">' + dmr(z['P\u016fvodn\u00ed term\u00edn']) + '</span> ' : '') +
       '<span' + (z._pozde ? ' class="late"' : '') + '>' + dmr(z['Term\u00edn']) + '</span>' : '';
-    var sd = z._ukol ? ids(z['\u0158e\u0161itel\u00e9']).map(function (id) { return esc(resitel(id)); }).join('<br>') + '<br>' + (z._ok ? 'SPLN\u011aNO' + (z['Vy\u0159e\u0161eno dne'] ? '<br>' + dmr(z['Vy\u0159e\u0161eno dne']) : '') : 'TRV\u00c1') : '';
+    var sd = z['Typ'] === 'rozhodnut\u00ed' && ids(z['Rozhodl']).length ? '<span class="mut">rozhodl</span><br>' + ids(z['Rozhodl']).map(function (id) { return esc(resitel(id)); }).join('<br>') :
+      z._ukol ? ids(z['\u0158e\u0161itel\u00e9']).map(function (id) { return esc(resitel(id)); }).join('<br>') + '<br>' + (z._ok ? 'SPLN\u011aNO' + (z['Vy\u0159e\u0161eno dne'] ? '<br>' + dmr(z['Vy\u0159e\u0161eno dne']) : '') : 'TRV\u00c1') : '';
     return '<div class="poz' + (z['Vrstva'] !== 'KD' ? ' sch' : '') + '"><span class="k"><span class="typ">' + esc(String(z['Typ'] || 'info').toUpperCase()) + '</span>' + esc(z['Zna\u010dka']) + '<br>' + dmr(z._datum) + ter + '</span>' +
       '<span class="t">' + esc(z['Text']) + (D.dopl[z['ID']] || []).map(function (x) {
         return '<span class="dpl"><span class="kdl">dopln\u011bno ' + esc(x._jedn) + ' \u00b7 ' + dmr(x._datum) + ':</span> ' + esc(x['Text']) + '</span>';
