@@ -481,7 +481,9 @@ function editor() {
       ' \u00b7 dal\u0161\u00ed KD ' + (j['Dal\u0161\u00ed KD'] ? fd(j['Dal\u0161\u00ed KD']) + (j['Dal\u0161\u00ed KD \u010das'] ? ' ' + esc(j['Dal\u0161\u00ed KD \u010das']) : '') : '\u2014') + '</div>' : '') + '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
     (lze ? '<button class="btn" id="hlav">Hlavi\u010dka a prezence</button>' : '') +
-    (kd ? '<button class="btn" id="pdf">' + (lze ? 'Koncept PDF' : 'PDF z\u00e1pisu') + '</button>' : '<button class="btn" id="pdfs">V\u00fdpis KD s pozn\u00e1mkami</button>') +
+    (kd ? '<button class="btn" id="pdf">' + (lze ? 'Koncept PDF' : 'PDF z\u00e1pisu') + '</button>' +
+          '<button class="btn" id="vypis" title="PDF jen s body a pozn\u00e1mkami, kter\u00e9 pr\u00e1v\u011b ukazuje filtr">V\u00fdpis podle filtru</button>'
+        : '<button class="btn" id="pdfs">V\u00fdpis KD s pozn\u00e1mkami</button>') +
     (kd && lze && D.ja.schvalovatel ? '<button class="btn p" id="vydat">' + (j['Stav'] === 'revize' ? 'Vydat revizi ' + j['Revize'] : 'Vydat ostr\u00fd z\u00e1pis') + '</button>' : '') +
     (kd && !lze && D.ja.schvalovatel && lzeRevidovat(j) ? '<button class="btn" id="revize">Otev\u0159\u00edt k revizi</button>' : '') + '</div></div>' +
     (j['Stav'] === 'revize' ? '<p class="revpas">Revize ' + esc(j['Revize']) + ' vydan\u00e9ho z\u00e1pisu \u2013 ' + esc(j['D\u016fvod revize'] || '') +
@@ -515,6 +517,7 @@ function editor() {
   if ((el = document.getElementById('hlav'))) el.onclick = dlgHlavicka;
   if ((el = document.getElementById('pdf'))) el.onclick = function () { if (lze) dlgPdf(); else udelatPdf(kdc(j['\u010c\u00edslo']), false, false); };
   if ((el = document.getElementById('pdfs'))) el.onclick = function () { var n = posledniKDcislo(); if (!n) return toast('Zat\u00edm nen\u00ed \u017e\u00e1dn\u00fd KD.', true); udelatPdf(n, true, true); };
+  if ((el = document.getElementById('vypis'))) el.onclick = dlgVypis;
   if ((el = document.getElementById('vydat'))) el.onclick = vydat;
   if ((el = document.getElementById('revize'))) el.onclick = dlgRevize;
   if ((el = document.getElementById('novyBod'))) el.onclick = dlgNovyBod;
@@ -1314,6 +1317,45 @@ function dlgPdf() {
     var s = !!fd2.get('nahledy'), jo = !!fd2.get('jenOtevrene');
     zavrit(); j['N\u00e1hledy fotek'] = s ? 'ano' : 'ne'; j['Jen otev\u0159en\u00e9 body'] = jo ? 'ano' : 'ne';
     udelatPdf(kdc(j['\u010c\u00edslo']), true, false, s, jo);
+  });
+}
+/** Popis nastaveneho filtru: {popis: do hlavicky vypisu, nazev: kratce do nazvu souboru}. */
+function popisFiltru() {
+  var f = S.filtr, D = S.D, casti = [], nazev = '';
+  if (f.resitel) {
+    var r = f.resitel.indexOf('f:') === 0 ? f.resitel.slice(2) : jmeno(f.resitel.slice(2));
+    casti.push('\u0159e\u0161itel: ' + r); nazev = r;
+  }
+  if (f.oddil) {
+    var o = D.oddily.filter(function (x) { return String(x['\u010c\u00edslo']) === String(f.oddil); })[0];
+    casti.push('odd\u00edl: ' + pad(+f.oddil) + (o ? ' ' + o['N\u00e1zev'] : ''));
+    if (!nazev) nazev = 'odd\u00edl ' + pad(+f.oddil);
+  }
+  if (f.poTerminu) { casti.push('po term\u00ednu'); if (!nazev) nazev = 'po term\u00ednu'; }
+  if (f.kritTermin) { casti.push('kritick\u00fd term\u00edn (do ' + KRITICKY_TERMIN_DNU + ' dn\u016f)'); if (!nazev) nazev = 'kritick\u00fd term\u00edn'; }
+  if (f.hledat.trim()) { casti.push('hled\u00e1n\u00ed: \u201e' + f.hledat.trim() + '\u201c'); if (!nazev) nazev = f.hledat.trim().slice(0, 30); }
+  if (f.otevrene) casti.push('jen otev\u0159en\u00e9');
+  if (f.schuzky) casti.push('s pozn\u00e1mkami ze sch\u016fzek');
+  return { popis: casti.join(' \u00b7 '), nazev: nazev };
+}
+function dlgVypis() {
+  var j = J(), body = pripravBody(), pf = popisFiltru();
+  if (!body.length) return toast('Filtru neodpov\u00edd\u00e1 \u017e\u00e1dn\u00fd bod.', true);
+  var vyber = {}, pozn = 0;
+  body.forEach(function (x) { vyber[x.b['ID']] = x.zaz.map(function (z) { return z['ID']; }); pozn += x.zaz.length; });
+  otevrit('<h3>V\u00fdpis podle filtru \u2013 KD ' + kdc(j['\u010c\u00edslo']) + '</h3>' +
+    '<p style="margin:0">Filtr: <b>' + esc(pf.popis || 'bez filtru') + '</b></p>' +
+    '<p style="margin:0">V\u00fdpis bude obsahovat <b>' + body.length + '</b> ' + (body.length === 1 ? 'bod' : body.length < 5 ? 'body' : 'bod\u016f') +
+    ' a ' + pozn + ' ' + (pozn === 1 ? 'pozn\u00e1mku' : pozn < 5 && pozn > 0 ? 'pozn\u00e1mky' : 'pozn\u00e1mek') +
+    ' \u2013 stejn\u011b jako na obrazovce, v\u017edy s celou histori\u00ed pozn\u00e1mek. Je to pracovn\u00ed v\u00fdpis: neulo\u017e\u00ed se jako z\u00e1pis, nem\u011bn\u00ed stav KD a v klientsk\u00e9 z\u00f3n\u011b se nezobraz\u00ed.</p>' +
+    '<label class="chk"><input type="checkbox" name="nahledy"> S n\u00e1hledy fotek z tohoto KD</label>' +
+    paticka('Vytvo\u0159it v\u00fdpis'), function (fd2) {
+    zavrit();
+    api('pdf', { zakazkaId: S.D.zakazka.id, cislo: kdc(j['\u010c\u00edslo']), koncept: false, poznamkySchuzek: !!S.filtr.schuzky, historie: 'vse',
+                 nahledy: !!fd2.get('nahledy'), vypis: { popis: pf.popis, nazev: pf.nazev, body: vyber } }).then(function (r) {
+      toast('V\u00fdpis vytvo\u0159en ve slo\u017ece ' + (r.slozka || 'z\u00e1pis\u016f'));
+      window.open(r.url, '_blank');
+    });
   });
 }
 function udelatPdf(cislo, kon, sch, nahledy, jenOtevrene) {
