@@ -61,6 +61,7 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--in
 .dpl{display:block;margin-top:3px;font-weight:400;font-style:normal}.dpl .kdl{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink2)}
 .dpl.kon,.dpl.kon .kdl{color:var(--red)}.dpl.akt{font-weight:600}.dpl button{margin-left:6px;font-size:12px;font-weight:400}
 .st.zr{border-color:#6B7178;color:#6B7178}
+.revpas{margin:10px 0 0;padding:8px 12px;border-left:3px solid var(--amber);background:#FFF8E8;color:var(--ink2);font-size:14px}
 .fg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px;max-width:540px;font-weight:400;font-style:normal}
 .fn{position:relative;padding:0;border:1px solid var(--line);background:var(--line2);aspect-ratio:4/3;overflow:hidden;cursor:pointer;display:block;width:100%}
 .fn img{width:100%;height:100%;object-fit:cover;display:block}.fn img:not([src]){visibility:hidden}
@@ -456,7 +457,8 @@ function jednani() {
     '<div class="list">' + (seznam.map(function (j) {
       return '<button class="row" data-id="' + esc(j['ID']) + '"><span class="mono" style="font-weight:600">' + esc(j['\u010c\u00edslo']) + '</span>' +
         '<span>' + fd(j['Datum']) + ' ' + esc(j['\u010cas'] || '') + '</span><span class="ink2">' + (j['Typ'] === 'KD' ? 'Kontroln\u00ed den' : 'Sch\u016fzka') +
-        (j['Pozn\u00e1mka ke KD'] ? ' \u00b7 ' + esc(String(j['Pozn\u00e1mka ke KD']).split(/\r?\n/)[0]) : '') + '</span><span class="x ' + (j['Stav'] === 'vyd\u00e1no' ? 'mut' : '') + '">' + esc(j['Stav']) + '</span></button>';
+        (j['Pozn\u00e1mka ke KD'] ? ' \u00b7 ' + esc(String(j['Pozn\u00e1mka ke KD']).split(/\r?\n/)[0]) : '') + '</span><span class="x ' + (j['Stav'] === 'vyd\u00e1no' ? 'mut' : '') + '">' + esc(j['Stav'] === 'revize' ? 'revize ' + j['Revize'] : j['Stav']) +
+        (j['Stav'] === 'vyd\u00e1no' && +j['Revize'] ? ' \u00b7 rev ' + esc(j['Revize']) : '') + '</span></button>';
     }).join('') || '<p class="empty">Zat\u00edm \u017e\u00e1dn\u00e9 jedn\u00e1n\u00ed. Zalo\u017ete prvn\u00ed kontroln\u00ed den.</p>') + '</div>';
   $app.querySelectorAll('[data-id]').forEach(function (b) { b.onclick = function () { S.jednaniId = b.dataset.id; editor(); }; });
   document.getElementById('novyKD').onclick = function () { dlgNoveJednani('KD'); };
@@ -480,7 +482,10 @@ function editor() {
     '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
     (lze ? '<button class="btn" id="hlav">Hlavi\u010dka a prezence</button>' : '') +
     (kd ? '<button class="btn" id="pdf">' + (lze ? 'Koncept PDF' : 'PDF z\u00e1pisu') + '</button>' : '<button class="btn" id="pdfs">V\u00fdpis KD s pozn\u00e1mkami</button>') +
-    (kd && lze && D.ja.schvalovatel ? '<button class="btn p" id="vydat">Vydat ostr\u00fd z\u00e1pis</button>' : '') + '</div></div>');
+    (kd && lze && D.ja.schvalovatel ? '<button class="btn p" id="vydat">' + (j['Stav'] === 'revize' ? 'Vydat revizi ' + j['Revize'] : 'Vydat ostr\u00fd z\u00e1pis') + '</button>' : '') +
+    (kd && !lze && D.ja.schvalovatel && lzeRevidovat(j) ? '<button class="btn" id="revize">Otev\u0159\u00edt k revizi</button>' : '') + '</div></div>' +
+    (j['Stav'] === 'revize' ? '<p class="revpas">Revize ' + esc(j['Revize']) + ' vydan\u00e9ho z\u00e1pisu \u2013 ' + esc(j['D\u016fvod revize'] || '') +
+      '. Z\u00e1pis jde upravovat, klientsk\u00e1 z\u00f3na nab\u00edz\u00ed ke sta\u017een\u00ed dosud vydan\u00e9 PDF, dokud revizi nevyd\u00e1te.</p>' : ''));
   if (!kd) h.push('<p class="ink2" style="margin:10px 0 0">Sch\u016fzka: k bod\u016fm se zapisuj\u00ed intern\u00ed pozn\u00e1mky (\u00fakol nebo info). \u00dakoly ze sch\u016fzky lze uzav\u0159\u00edt zde i v KD; \u00fakoly z KD jen v z\u00e1pisu KD. Pravidla bodu a rozhodnut\u00ed se m\u011bn\u00ed jen v z\u00e1pisu KD. Pozn\u00e1mky se do ostr\u00e9ho z\u00e1pisu KD netisknou.</p>');
   h.push('<div class="bar">' + (kd && lze ? '<button class="btn p" id="novyBod">+ Nov\u00fd bod</button>' : '') + '<button class="btn" id="vykresy">V\u00fdkresy</button>' +
     '<input class="grow" type="text" id="hledat" placeholder="Hledat n\u00e1zev, \u010d\u00edslo nebo text\u2026" value="' + esc(f.hledat) + '">' +
@@ -511,6 +516,7 @@ function editor() {
   if ((el = document.getElementById('pdf'))) el.onclick = function () { if (lze) dlgPdf(); else udelatPdf(kdc(j['\u010c\u00edslo']), false, false); };
   if ((el = document.getElementById('pdfs'))) el.onclick = function () { var n = posledniKDcislo(); if (!n) return toast('Zat\u00edm nen\u00ed \u017e\u00e1dn\u00fd KD.', true); udelatPdf(n, true, true); };
   if ((el = document.getElementById('vydat'))) el.onclick = vydat;
+  if ((el = document.getElementById('revize'))) el.onclick = dlgRevize;
   if ((el = document.getElementById('novyBod'))) el.onclick = dlgNovyBod;
   document.getElementById('vykresy').onclick = function () { zobrazVykresy(null, null); };
   var hl = document.getElementById('hledat');
@@ -1317,9 +1323,28 @@ function udelatPdf(cislo, kon, sch, nahledy, jenOtevrene) {
   });
 }
 
+/** Revidovat jde jen posledni vydany KD (po nem zadny dalsi vydany). */
+function lzeRevidovat(j) {
+  if (!j || j['Typ'] !== 'KD' || j['Stav'] !== 'vyd\u00e1no') return false;
+  return !S.D.jednani.some(function (x) { return x['Typ'] === 'KD' && x['Stav'] === 'vyd\u00e1no' && kdc(x['\u010c\u00edslo']) > kdc(j['\u010c\u00edslo']); });
+}
+function dlgRevize() {
+  var j = J();
+  otevrit('<h3>Otev\u0159\u00edt ' + esc(j['\u010c\u00edslo']) + ' k revizi</h3>' +
+    '<p style="margin:0">Vydan\u00fd z\u00e1pis se znovu otev\u0159e k \u00faprav\u00e1m. Po \u00faprav\u00e1ch ho vyd\u00e1te jako <b>revizi ' + ((+j['Revize'] || 0) + 1) + '</b>; ' +
+    'na kryc\u00edm listu bude \u010d\u00edslo a d\u016fvod revize. Dosud vydan\u00e9 PDF z\u016fstane na Disku a v klientsk\u00e9 z\u00f3n\u011b, dokud revizi nevyd\u00e1te.</p>' +
+    '<label class="f">D\u016fvod revize (jedna v\u011bta)<input type="text" name="duvod" required maxlength="200" placeholder="nap\u0159. Oprava term\u00ednu bodu 03.02 po p\u0159ipom\u00ednce zhotovitele"></label>' +
+    paticka('Otev\u0159\u00edt k revizi', '', 'Zp\u011bt'), function (fd2) {
+    api('otevritRevizi', { zakazkaId: S.D.zakazka.id, jednaniId: j['ID'], duvod: fd2.get('duvod') }).then(function (r) {
+      zavrit(); upsert(S.D.jednani, r.jednani); idx(); editor(); toast(j['\u010c\u00edslo'] + ' je otev\u0159en\u00fd k revizi ' + r.jednani['Revize']);
+    });
+  });
+}
+
 function vydat() {
   var j = J();
-  otevrit('<h3>Vydat ostr\u00fd z\u00e1pis ' + esc(j['\u010c\u00edslo']) + '</h3>' +
+  otevrit('<h3>' + (j['Stav'] === 'revize' ? 'Vydat revizi ' + esc(j['Revize']) + ' z\u00e1pisu ' : 'Vydat ostr\u00fd z\u00e1pis ') + esc(j['\u010c\u00edslo']) + '</h3>' +
+    (j['Stav'] === 'revize' ? '<p style="margin:0">D\u016fvod revize: ' + esc(j['D\u016fvod revize'] || '') + '. Nov\u00e9 PDF nahrad\u00ed dosud vydan\u00e9 v klientsk\u00e9 z\u00f3n\u011b; p\u016fvodn\u00ed z\u016fstane na Disku.</p>' : '') +
     '<p style="margin:0">Jedn\u00e1n\u00ed se uzamkne a PDF se ulo\u017e\u00ed jako z\u00e1vazn\u00e1 verze. Origin\u00e1ly vybran\u00fdch fotek se zkop\u00edruj\u00ed do slo\u017eky ' + esc(nazevVyberu(j)) + '.</p>' +
     volbaNahledu(j) + paticka('Vydat z\u00e1pis'), function (fd2) {
     zavrit();
