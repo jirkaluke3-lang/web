@@ -1312,7 +1312,7 @@ function dlgPdf() {
 }
 function udelatPdf(cislo, kon, sch, nahledy, jenOtevrene) {
   api('pdf', { zakazkaId: S.D.zakazka.id, cislo: cislo, koncept: kon, poznamkySchuzek: sch, historie: 'vse', nahledy: nahledy, jenOtevrene: jenOtevrene }).then(function (r) {
-    toast('PDF vytvo\u0159eno ve slo\u017ece Z\u00c1PISY');
+    toast('PDF vytvo\u0159eno ve slo\u017ece ' + (r.slozka || 'z\u00e1pis\u016f'));
     window.open(r.url, '_blank');
   });
 }
@@ -1326,7 +1326,7 @@ function vydat() {
     api('vydat', { zakazkaId: S.D.zakazka.id, jednaniId: j['ID'], nahledy: !!fd2.get('nahledy'), jenOtevrene: !!fd2.get('jenOtevrene') }).then(function (r) {
       upsert(S.D.jednani, r.jednani); idx(); editor();
       var fv = r.fotovyber;
-      toast('Z\u00e1pis vyd\u00e1n' + (fv && fv.pocet ? ' \u00b7 ' + fv.pocet + ' fotek ve slo\u017ece ' + fv.slozka : '') + (fv && fv.chyba ? ' \u00b7 fotov\u00fdb\u011br se nepovedl: ' + fv.chyba : ''), !!(fv && fv.chyba));
+      toast('Z\u00e1pis vyd\u00e1n' + (r.slozka ? ' \u00b7 PDF ve slo\u017ece ' + r.slozka : '') + (fv && fv.pocet ? ' \u00b7 ' + fv.pocet + ' fotek ve slo\u017ece ' + fv.slozka : '') + (fv && fv.chyba ? ' \u00b7 fotov\u00fdb\u011br se nepovedl: ' + fv.chyba : ''), !!(fv && fv.chyba));
       window.open(r.url, '_blank');
     });
   });
